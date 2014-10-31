@@ -15,6 +15,7 @@ void converter::loadDefRackDefs(const char* env_fname)
 	loadRackDefs(fname);
 }
 
+// Read rack_definitions.xml
 void converter::loadRackDefs(const char* fname) 
 {
 	TiXmlDocument doc(fname);
@@ -40,12 +41,15 @@ void converter::loadRackDefs(const char* fname)
 	loadSlotDefs(hRoot);
 }
 
+// Extract the definitions of the rack types from the xml
 void converter::loadRackDefs(TiXmlHandle &hRoot)
 {
 	m_racks.clear();
+	//printf("Loading rack defs\n");
 	
-	for( TiXmlElement* pElem=hRoot.FirstChild("racks").FirstChild().Element(); pElem; pElem=pElem->NextSiblingElement())
+	for( TiXmlElement* pElem=hRoot.FirstChild("racks").FirstChild("rack").Element(); pElem; pElem=pElem->NextSiblingElement())
 	{
+		//printf("Loading rack defs - racks\n");
 		std::map<std::string, samplePosn> posns;
 		std::string rackName = pElem->Attribute("name");
 		for ( TiXmlElement *pRack = pElem->FirstChildElement("position") ; pRack ; pRack=pRack->NextSiblingElement() ) {
@@ -57,6 +61,7 @@ void converter::loadRackDefs(TiXmlHandle &hRoot)
 			else {
 				printf("sampleChanger: rack has no name attribute \"%s\"\n", rackName.c_str());
 			}
+			//printf("Loading rack defs - %s\n", posn.name.c_str());
 			if ( pRack->QueryDoubleAttribute("x", &posn.x)!=TIXML_SUCCESS ) {
 				printf("sampleChanger: unable to read x attribute \"%s\" \"%s\"\n", rackName.c_str(), posn.name.c_str());
 			}
@@ -69,12 +74,15 @@ void converter::loadRackDefs(TiXmlHandle &hRoot)
 	}
 }
 
+// Extract the definitions of the slots from the xml
 void converter::loadSlotDefs(TiXmlHandle &hRoot)
 {
+	//printf("Loading slot defs\n");
 	m_slots.clear();
 	
-	for( TiXmlElement* pElem=hRoot.FirstChild("slots").FirstChild().Element(); pElem; pElem=pElem->NextSiblingElement())
+	for( TiXmlElement* pElem=hRoot.FirstChild("slots").FirstChild("slot").Element(); pElem; pElem=pElem->NextSiblingElement())
 	{
+		
 		slotData slot;
 		std::string slotName = pElem->Attribute("name");
 		slot.name = slotName;
@@ -92,6 +100,7 @@ void converter::loadSlotDefs(TiXmlHandle &hRoot)
 	}
 }
 
+// Load the slot details - ie the current setup in samplechanger.xml
 void converter::loadSlotDetails(const char* fname) 
 {
 	TiXmlDocument doc(fname);
@@ -116,10 +125,11 @@ void converter::loadSlotDetails(const char* fname)
 	loadSlotDetails(hRoot);
 }
 
+// Extract slot details from the xml
 void converter::loadSlotDetails(TiXmlHandle &hRoot)
 {
 	//printf("Slot details\n");
-	for( TiXmlElement* pElem=hRoot.FirstChild().Element(); pElem; pElem=pElem->NextSiblingElement())
+	for( TiXmlElement* pElem=hRoot.FirstChild("slot").Element(); pElem; pElem=pElem->NextSiblingElement())
 	{
 		std::string slotName = pElem->Attribute("name");
 		
@@ -142,6 +152,7 @@ void converter::loadSlotDetails(TiXmlHandle &hRoot)
 	}
 }
 
+// Create the lookup file
 void converter::createLookup() 
 {
 	const char *fnameIn = getenv("SLOT_DETAILS_FILE");
@@ -167,9 +178,13 @@ void converter::createLookup()
 	fclose(fpOut);
 }
 
+// Write to the lookup file
 void converter::createLookup(FILE *fpOut) 
 {
-	//printf("Create Lookup\n");
+	fprintf(fpOut, "# Convert sample position names to y and zlo motor coordinates\n");
+	fprintf(fpOut, "# WARNING: Generated file - Do not edit\n");
+	fprintf(fpOut, "# Instead edit samplechanger.xml and press recalc\n");
+
 	for ( std::map<std::string, slotData>::iterator it=m_slots.begin() ; it!=m_slots.end() ; it++ ) {
 		slotData &slot = it->second;
 		//printf("Create Lookup %s\n", slot.name);
