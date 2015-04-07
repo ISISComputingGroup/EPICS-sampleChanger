@@ -15,19 +15,6 @@ LIBRARY_IOC = $(APPNAME)
 # sampleChanger.dbd will be created and installed
 DBD += $(APPNAME).dbd
 
-# sampleChanger.dbd will be made up from these files:
-$(APPNAME)_DBD += base.dbd
-## ISIS standard dbd ##
-$(APPNAME)_DBD += devSequencer.dbd
-$(APPNAME)_DBD += icpconfig.dbd
-$(APPNAME)_DBD += pvdump.dbd
-$(APPNAME)_DBD += asSupport.dbd
-$(APPNAME)_DBD += devIocStats.dbd
-$(APPNAME)_DBD += caPutLog.dbd
-$(APPNAME)_DBD += utilities.dbd
-## add other dbd here ##
-#$(APPNAME)_DBD += xxx.dbd
-
 # Add all the support libraries needed by this IOC
 ## ISIS standard libraries ##
 $(APPNAME)_LIBS += seqDev seq pv
@@ -40,13 +27,7 @@ $(APPNAME)_LIBS += utilities
 ## Add other libraries here ##
 $(APPNAME)_LIBS += asubFunctions asyn TinyXML
 
-# sampleChanger_registerRecordDeviceDriver.cpp derives from sampleChanger.dbd
-$(APPNAME)_SRCS += $(APPNAME)_registerRecordDeviceDriver.cpp
 $(APPNAME)_SRCS += converter.cpp sampleChanger.cpp
-
-# Build the main IOC entry point on workstation OSs.
-$(APPNAME)_SRCS_DEFAULT += $(APPNAME)Main.cpp
-$(APPNAME)_SRCS_vxWorks += -nil-
 
 # Add support from base/src/vxWorks if needed
 #$(APPNAME)_OBJS_vxWorks += $(EPICS_BASE_BIN)/vxComLibrary

@@ -1,3 +1,5 @@
+#include <errlog.h>
+
 #include "converter.h"
 
 converter::converter()
