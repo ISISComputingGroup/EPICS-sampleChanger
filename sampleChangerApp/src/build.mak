@@ -17,15 +17,16 @@ DBD += $(APPNAME).dbd
 
 # Add all the support libraries needed by this IOC
 ## ISIS standard libraries ##
-$(APPNAME)_LIBS += seqDev seq pv
 $(APPNAME)_LIBS += devIocStats 
 $(APPNAME)_LIBS += pvdump $(MYSQLLIB) easySQLite sqlite 
 $(APPNAME)_LIBS += caPutLog
 $(APPNAME)_LIBS += icpconfig pugixml
 $(APPNAME)_LIBS += autosave
 $(APPNAME)_LIBS += utilities
+$(APPNAME)_LIBS += asubFunctions asyn
+$(APPNAME)_LIBS += seqDev seq pv
+$(APPNAME)_LIBS += TinyXML
 ## Add other libraries here ##
-$(APPNAME)_LIBS += asubFunctions asyn TinyXML
 
 $(APPNAME)_SRCS += converter.cpp sampleChanger.cpp
 
