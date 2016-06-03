@@ -196,7 +196,7 @@ void converter::createLookup(FILE *fpOut)
 		}
 		else {
 			for ( std::map<std::string, samplePosn>::iterator it2 = iter->second.begin() ; it2!=iter->second.end() ; it2++ ) {
-				fprintf(fpOut, "%s_%s %f %f\n", slot.name.c_str(), it2->second.name.c_str(), it2->second.x+slot.x+slot.xoff, it2->second.y+slot.y+slot.yoff);
+				fprintf(fpOut, "%s%s %f %f\n", it2->second.name.c_str(), slot.name.c_str(), it2->second.x+slot.x+slot.xoff, it2->second.y+slot.y+slot.yoff);
 			}
 		}
 	}
