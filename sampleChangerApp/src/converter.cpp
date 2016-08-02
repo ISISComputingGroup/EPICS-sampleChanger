@@ -2,8 +2,9 @@
 
 #include "converter.h"
 
-converter::converter()
+converter::converter(int i)
 {
+	m_dims = i;
 	loadDefRackDefs("RACKDEFS");
 } 
 
@@ -67,7 +68,7 @@ void converter::loadRackDefs(TiXmlHandle &hRoot)
 			if ( pRack->QueryDoubleAttribute("x", &posn.x)!=TIXML_SUCCESS ) {
 				errlogPrintf("sampleChanger: unable to read x attribute \"%s\" \"%s\"\n", rackName.c_str(), posn.name.c_str());
 			}
-			if ( pRack->QueryDoubleAttribute("y", &posn.y)!=TIXML_SUCCESS ) {
+			if ( m_dims>1 && pRack->QueryDoubleAttribute("y", &posn.y)!=TIXML_SUCCESS ) {
 				errlogPrintf("sampleChanger: unable to read y attribute \"%s\" \"%s\"\n", rackName.c_str(), posn.name.c_str());
 			}
 			posns[posn.name] = posn;
@@ -92,7 +93,7 @@ void converter::loadSlotDefs(TiXmlHandle &hRoot)
 		if ( pElem->QueryDoubleAttribute("x", &slot.x)!=TIXML_SUCCESS ) {
 			errlogPrintf("sampleChanger: unable to read slot x attribute \"%s\"\n", slotName.c_str());
 		}
-		if ( pElem->QueryDoubleAttribute("y", &slot.y)!=TIXML_SUCCESS ) {
+		if ( m_dims>1 && pElem->QueryDoubleAttribute("y", &slot.y)!=TIXML_SUCCESS ) {
 			errlogPrintf("sampleChanger: unable to read slot y attribute \"%s\"\n", slotName.c_str());
 		}
 		
@@ -145,7 +146,7 @@ void converter::loadSlotDetails(TiXmlHandle &hRoot)
 			if ( pElem->QueryDoubleAttribute("xoff", &(iter->second.xoff))!=TIXML_SUCCESS ) {
 				errlogPrintf("sampleChanger: unable to read slot xoff attribute \"%s\"\n", slotName.c_str());
 			}
-			if ( pElem->QueryDoubleAttribute("yoff", &(iter->second.yoff))!=TIXML_SUCCESS ) {
+			if ( m_dims>1 && pElem->QueryDoubleAttribute("yoff", &(iter->second.yoff))!=TIXML_SUCCESS ) {
 				errlogPrintf("sampleChanger: unable to read slot yoff attribute \"%s\"\n", slotName.c_str());
 			}
 		
@@ -183,7 +184,7 @@ void converter::createLookup()
 // Write to the lookup file
 void converter::createLookup(FILE *fpOut) 
 {
-	fprintf(fpOut, "# Convert sample position names to y and zlo motor coordinates\n");
+	fprintf(fpOut, "# Convert sample position names to motor coordinates\n");
 	fprintf(fpOut, "# WARNING: Generated file - Do not edit\n");
 	fprintf(fpOut, "# Instead edit samplechanger.xml and press recalc\n");
 
@@ -196,7 +197,12 @@ void converter::createLookup(FILE *fpOut)
 		}
 		else {
 			for ( std::map<std::string, samplePosn>::iterator it2 = iter->second.begin() ; it2!=iter->second.end() ; it2++ ) {
-				fprintf(fpOut, "%s%s %f %f\n", it2->second.name.c_str(), slot.name.c_str(), it2->second.x+slot.x+slot.xoff, it2->second.y+slot.y+slot.yoff);
+				if ( m_dims==1 ) {
+					fprintf(fpOut, "%s%s %f\n", it2->second.name.c_str(), slot.name.c_str(), it2->second.x+slot.x+slot.xoff);					
+				}
+				else if ( m_dims==2 ) {
+					fprintf(fpOut, "%s%s %f %f\n", it2->second.name.c_str(), slot.name.c_str(), it2->second.x+slot.x+slot.xoff, it2->second.y+slot.y+slot.yoff);
+				}
 			}
 		}
 	}

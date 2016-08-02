@@ -15,16 +15,16 @@
 #include <epicsEvent.h>
 #include <iocsh.h>
 
-#include "sampleChanger.h"
+#include "linearSampleChanger.h"
 
 #include <macLib.h>
 #include <epicsGuard.h>
 
 #include <epicsExport.h>
 
-static const char *driverName = "sampleChanger";
+static const char *driverName = "linearSampleChanger";
 
-sampleChanger::sampleChanger(const char *portName, const char* fileName) 
+linearSampleChanger::linearSampleChanger(const char *portName, const char* fileName) 
    : asynPortDriver(portName, 
                     0, /* maxAddr */ 
                     NUM_MSP_PARAMS, /* num parameters */
@@ -42,12 +42,12 @@ sampleChanger::sampleChanger(const char *portName, const char* fileName)
     setDoubleParam(P_outval, m_outval);
 }
 
-asynStatus sampleChanger::writeInt32(asynUser *pasynUser, epicsInt32 value)
+asynStatus linearSampleChanger::writeInt32(asynUser *pasynUser, epicsInt32 value)
 {
     return writeFloat64(pasynUser, value);
 }
 
-asynStatus sampleChanger::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
+asynStatus linearSampleChanger::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 {
     int function = pasynUser->reason;
     const char* functionName = "writeFloat64";
@@ -80,7 +80,7 @@ asynStatus sampleChanger::writeFloat64(asynUser *pasynUser, epicsFloat64 value)
 	return status;
 }
 
-asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, size_t maxChars, size_t *nActual)
+asynStatus linearSampleChanger::writeOctet(asynUser *pasynUser, const char *value, size_t maxChars, size_t *nActual)
 {
     int function = pasynUser->reason;
     const char* functionName = "writeOctet";
@@ -91,7 +91,7 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
 
 	if (function == P_recalc) 
 	{
-		converter c(2);
+		converter c(1);
 		c.createLookup();
 		
 		setDoubleParam(P_outval, ++m_outval);
@@ -116,16 +116,16 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
 
 extern "C" {
 
-int sampleChangerConfigure(const char *portName, const char* fileName)
+int linearSampleChangerConfigure(const char *portName, const char* fileName)
 {
 	try
 	{
-		new sampleChanger(portName, fileName);
+		new linearSampleChanger(portName, fileName);
 		return(asynSuccess);
 	}
 	catch(const std::exception& ex)
 	{
-		std::cerr << "sampleChanger failed: " << ex.what() << std::endl;
+		std::cerr << "linearSampleChanger failed: " << ex.what() << std::endl;
 		return(asynError);
 	}
 }
@@ -137,19 +137,19 @@ static const iocshArg initArg1 = { "fileName", iocshArgString};			///< The name 
 
 static const iocshArg * const initArgs[] = { &initArg0, &initArg1 };
 
-static const iocshFuncDef initFuncDef = {"sampleChangerConfigure", sizeof(initArgs) / sizeof(iocshArg*), initArgs};
+static const iocshFuncDef initFuncDef = {"linearSampleChangerConfigure", sizeof(initArgs) / sizeof(iocshArg*), initArgs};
 
 static void initCallFunc(const iocshArgBuf *args)
 {
-    sampleChangerConfigure(args[0].sval, args[1].sval);
+    linearSampleChangerConfigure(args[0].sval, args[1].sval);
 }
 
-static void sampleChangerRegister(void)
+static void linearSampleChangerRegister(void)
 {
     iocshRegister(&initFuncDef, initCallFunc);
 }
 
-epicsExportRegistrar(sampleChangerRegister);
+epicsExportRegistrar(linearSampleChangerRegister);
 
 }
 

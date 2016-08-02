@@ -1,0 +1,94 @@
+<?xml version="1.0"?>
+<definitions>
+	<racks>
+		<rack name="NarrowX10">
+			<position name="T" y="0" x="0"/>
+			<position name="S" y="0" x="-29"/>
+			<position name="R" y="0" x="-58"/>
+			<position name="Q" y="0" x="-87"/>
+			<position name="P" y="0" x="-116"/>
+			<position name="O" y="0" x="-145"/>
+			<position name="N" y="0" x="-174"/>
+			<position name="M" y="0" x="-203"/>
+			<position name="L" y="0" x="-232"/>
+			<position name="K" y="0" x="-261"/>
+            <position name="J" y="0" x="-331.5"/>
+            <position name="I" y="0" x="-360.5"/>
+            <position name="H" y="0" x="-389.5"/>
+            <position name="G" y="0" x="-418.5"/>
+            <position name="F" y="0" x="-447.5"/>
+            <position name="E" y="0" x="-476.5"/>
+            <position name="D" y="0" x="-505.5"/>
+            <position name="C" y="0" x="-534.5"/>
+            <position name="B" y="0" x="-563.5"/>
+            <position name="A" y="0" x="-592.5"/>
+		</rack>
+        <rack name="WideX7">
+			<position name="14" y="0" x="0"/>
+			<position name="13" y="0" x="-42"/>
+			<position name="12" y="0" x="-84"/>
+			<position name="11" y="0" x="-126"/>
+			<position name="10" y="0" x="-168"/>
+			<position name="9" y="0" x="-210"/>
+			<position name="8" y="0" x="-252"/>
+            <position name="7" y="0" x="-331.2"/>
+            <position name="6" y="0" x="-373.2"/>
+            <position name="5" y="0" x="-415.2"/>
+            <position name="4" y="0" x="-457.2"/>
+            <position name="3" y="0" x="-499.2"/>
+            <position name="2" y="0" x="-541.2"/>
+            <position name="1" y="0" x="-583.2"/>
+		</rack>        
+		<rack name="Double Stopper">
+			<position name="1" y="0" x="10"/>
+			<position name="2" y="0" x="25"/>
+			<position name="3" y="0" x="40"/>
+			<position name="4" y="0" x="55"/>
+			<position name="5" y="0" x="70"/>
+			<position name="6" y="0" x="85"/>
+			<position name="7" y="0" x="100"/>
+		</rack>
+		<rack name="Banjo">
+			<position name="14" y="0" x="0"/>
+			<position name="13" y="0" x="-45"/>
+			<position name="12" y="0" x="-90"/>
+			<position name="11" y="0" x="-135"/>
+			<position name="10" y="0" x="-180"/>
+			<position name="9" y="0" x="-225"/>
+			<position name="8" y="0" x="-270"/>
+			<position name="7" y="0" x="-330.5"/>
+			<position name="6" y="0" x="-375.5"/>
+			<position name="5" y="0" x="-420.5"/>
+			<position name="4" y="0" x="-465.5"/>
+			<position name="3" y="0" x="-510.5"/>
+			<position name="2" y="0" x="-555.5"/>
+			<position name="1" y="0" x="-600.5"/>            
+		</rack>
+		<rack name="Banjo 2mm">
+			<position name="1" y="0" x="0"/>
+			<position name="2" y="0" x="10"/>
+			<position name="3" y="0" x="20"/>
+			<position name="4" y="0" x="30"/>
+			<position name="5" y="0" x="40"/>
+			<position name="6" y="0" x="50"/>
+			<position name="7" y="0" x="60"/>
+		</rack>
+		<rack name="Banjo 5mm">
+			<position name="1" y="0" x="0"/>
+			<position name="2" y="0" x="13"/>
+			<position name="3" y="0" x="26"/>
+			<position name="4" y="0" x="39"/>
+			<position name="5" y="0" x="52"/>
+			<position name="6" y="0" x="75"/>
+			<position name="7" y="0" x="88"/>
+		</rack>
+	</racks>
+	<slots>
+		<slot name="T" x="0" y="0"/>
+		<slot name="B" x="0" y="0"/>
+        <slot name="WT" x="0" y="0"/>
+		<slot name="WB" x="0" y="0"/>
+        <slot name="CT" x="0" y="0"/>
+		<slot name="CB" x="0" y="0"/>        
+	</slots>
+</definitions>
