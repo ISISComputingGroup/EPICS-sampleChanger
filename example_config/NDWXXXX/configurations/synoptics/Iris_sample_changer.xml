@@ -13,21 +13,21 @@
 			<pvs>
 				<pv>
 					<displayname>In Position</displayname>
-					<address>NDW1695:HRA63823:LKUP:LSAMPLE:POSITIONED</address>
+					<address>NDWXXXX:MYFEDID:LKUP:LSAMPLE:POSITIONED</address>
 					<recordtype>
 						<io>READ</io>
 					</recordtype>
 				</pv>
 				<pv>
 					<displayname>Sample</displayname>
-					<address>NDW1695:HRA63823:LKUP:LSAMPLE:POSN</address>
+					<address>NDWXXXX:MYFEDID:LKUP:LSAMPLE:POSN</address>
 					<recordtype>
 						<io>READ</io>
 					</recordtype>
 				</pv>
 				<pv>
 					<displayname>Sample</displayname>
-					<address>NDW1695:HRA63823:LKUP:LSAMPLE:POSN:SP</address>
+					<address>NDWXXXX:MYFEDID:LKUP:LSAMPLE:POSN:SP</address>
 					<recordtype>
 						<io>WRITE</io>
 					</recordtype>
@@ -46,21 +46,21 @@
 			<pvs>
 				<pv>
 					<displayname>In Position</displayname>
-					<address>NDW1695:HRA63823:LKUP:SAMPLE:POSITIONED</address>
+					<address>NDWXXXX:MYFEDID:LKUP:SAMPLE:POSITIONED</address>
 					<recordtype>
 						<io>READ</io>
 					</recordtype>
 				</pv>
 				<pv>
 					<displayname>Sample</displayname>
-					<address>NDW1695:HRA63823:LKUP:SAMPLE:POSN</address>
+					<address>NDWXXXX:MYFEDID:LKUP:SAMPLE:POSN</address>
 					<recordtype>
 						<io>READ</io>
 					</recordtype>
 				</pv>
 				<pv>
 					<displayname>Sample</displayname>
-					<address>NDW1695:HRA63823:LKUP:SAMPLE:POSN:SP</address>
+					<address>NDWXXXX:MYFEDID:LKUP:SAMPLE:POSN:SP</address>
 					<recordtype>
 						<io>WRITE</io>
 					</recordtype>
