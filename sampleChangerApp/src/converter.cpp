@@ -2,7 +2,7 @@
 
 #include "converter.h"
 
-converter::converter(int i)
+converter::converter(int i=2)
 {
 	m_dims = i;
 	loadDefRackDefs("RACKDEFS");
@@ -200,7 +200,7 @@ void converter::createLookup(FILE *fpOut)
 				if ( m_dims==1 ) {
 					fprintf(fpOut, "%s%s %f\n", it2->second.name.c_str(), slot.name.c_str(), it2->second.x+slot.x+slot.xoff);					
 				}
-				else if ( m_dims==2 ) {
+				else {
 					fprintf(fpOut, "%s%s %f %f\n", it2->second.name.c_str(), slot.name.c_str(), it2->second.x+slot.x+slot.xoff, it2->second.y+slot.y+slot.yoff);
 				}
 			}

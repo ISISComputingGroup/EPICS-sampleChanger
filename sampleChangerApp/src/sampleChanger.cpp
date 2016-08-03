@@ -43,9 +43,7 @@ sampleChanger::sampleChanger(const char *portName, const char* fileName, int dim
 	
 	// set dims. Default should be 2. Only 1 and 2 are currently supported
 	m_dims = dims;
-	if (m_dims!=1 || m_dims!=2) {
-		m_dims = 2;
-	}
+	if ( m_dims!=1 ) m_dims = 2;
 }
 
 asynStatus sampleChanger::writeInt32(asynUser *pasynUser, epicsInt32 value)
