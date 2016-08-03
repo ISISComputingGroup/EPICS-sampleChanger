@@ -1,4 +1,0 @@
-# Lookup file for Polariser
-Short_Polariser 9 -1.6
-Long_Polariser 109 -1.6
-FOM 209 -1.6

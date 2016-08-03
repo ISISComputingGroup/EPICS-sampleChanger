@@ -1,8 +1,0 @@
-<slots>
-	<slot name="T" rack_type="NarrowX10" xoff="284.7" yoff="-125.0"/>
-	<slot name="B" rack_type="NarrowX10" xoff="283.5" yoff="104.7"/>
-    <slot name="WT" rack_type="WideX7" xoff="273.8" yoff="-125.0"/>
-	<slot name="WB" rack_type="WideX7" xoff="273.8" yoff="104.7"/>
-    <slot name="CT" rack_type="Banjo" xoff="290.0" yoff="-126.0"/>
-    <slot name="CB" rack_type="Banjo" xoff="289.75" yoff="103.7"/>
-    </slots>

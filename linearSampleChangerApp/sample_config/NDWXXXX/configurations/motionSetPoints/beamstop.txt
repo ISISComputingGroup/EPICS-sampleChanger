@@ -1,4 +1,0 @@
-# Lookup file for Moving Beamstop
-# COORD1 is vertical BSZ. COORD2 is horizontal BSY!
-In 338 88
-Out 700 88
