@@ -24,7 +24,7 @@
 
 static const char *driverName = "sampleChanger";
 
-sampleChanger::sampleChanger(const char *portName, const char* fileName, int dims) 
+sampleChanger::sampleChanger(const char *portName, const char* fileName, int dims=2) 
    : asynPortDriver(portName, 
                     0, /* maxAddr */ 
                     NUM_MSP_PARAMS, /* num parameters */
