@@ -27,7 +27,7 @@ struct slotData
 class converter
 {
 public:
-	converter(int i);
+	converter(int i=2);
 	virtual ~converter() {};
 	void createLookup();
 	

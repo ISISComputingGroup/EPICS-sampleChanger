@@ -1,3 +1,5 @@
+## Assumes 2D sample changer ##
+
 from genie_python import genie
 import time
 import os
