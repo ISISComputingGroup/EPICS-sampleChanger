@@ -27,7 +27,7 @@ struct slotData
 class converter
 {
 public:
-	converter();
+	converter(int i);
 	virtual ~converter() {};
 	void createLookup();
 	
@@ -35,6 +35,8 @@ private:
 	std::map<std::string, std::map<std::string, samplePosn> > m_racks;
 	
 	std::map<std::string, slotData> m_slots;
+	
+	int m_dims;
 
 	void loadDefRackDefs(const char* env_fname);
 	void loadRackDefs(const char* fname);

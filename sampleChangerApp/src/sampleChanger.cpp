@@ -24,7 +24,7 @@
 
 static const char *driverName = "sampleChanger";
 
-sampleChanger::sampleChanger(const char *portName, const char* fileName) 
+sampleChanger::sampleChanger(const char *portName, const char* fileName, int dims=2) 
    : asynPortDriver(portName, 
                     0, /* maxAddr */ 
                     NUM_MSP_PARAMS, /* num parameters */
@@ -40,6 +40,10 @@ sampleChanger::sampleChanger(const char *portName, const char* fileName)
 
 	// initial values
     setDoubleParam(P_outval, m_outval);
+	
+	// set dims. Default should be 2. Only 1 and 2 are currently supported
+	m_dims = dims;
+	if ( m_dims!=1 ) m_dims = 2;
 }
 
 asynStatus sampleChanger::writeInt32(asynUser *pasynUser, epicsInt32 value)
@@ -91,7 +95,7 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
 
 	if (function == P_recalc) 
 	{
-		converter c;
+		converter c(m_dims);
 		c.createLookup();
 		
 		setDoubleParam(P_outval, ++m_outval);
@@ -116,11 +120,11 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
 
 extern "C" {
 
-int sampleChangerConfigure(const char *portName, const char* fileName)
+int sampleChangerConfigure(const char *portName, const char* fileName, int dims=2)
 {
 	try
 	{
-		new sampleChanger(portName, fileName);
+		new sampleChanger(portName, fileName, dims);
 		return(asynSuccess);
 	}
 	catch(const std::exception& ex)
@@ -134,14 +138,15 @@ int sampleChangerConfigure(const char *portName, const char* fileName)
 
 static const iocshArg initArg0 = { "portName", iocshArgString};			///< The name of the asyn driver port we will create
 static const iocshArg initArg1 = { "fileName", iocshArgString};			///< The name of the lookup file
+static const iocshArg initArg2 = { "nDims", iocshArgInt};			    ///< Number of dimensions of the sample changer
 
-static const iocshArg * const initArgs[] = { &initArg0, &initArg1 };
+static const iocshArg * const initArgs[] = { &initArg0, &initArg1, & initArg2 };
 
 static const iocshFuncDef initFuncDef = {"sampleChangerConfigure", sizeof(initArgs) / sizeof(iocshArg*), initArgs};
 
 static void initCallFunc(const iocshArgBuf *args)
 {
-    sampleChangerConfigure(args[0].sval, args[1].sval);
+	sampleChangerConfigure(args[0].sval, args[1].sval, args[2].ival);
 }
 
 static void sampleChangerRegister(void)

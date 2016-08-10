@@ -1,0 +1,72 @@
+<?xml version="1.0" ?>
+<instrument xmlns="http://www.isis.stfc.ac.uk//instrument">
+	<name>Iris_sample_changer</name>
+	<components>
+		<component>
+			<name>Linear sample changer</name>
+			<type>LINEARSAMPLECHANGER</type>
+			<target>
+				<name>Linear sample changer</name>
+				<type>OPI</type>
+				<properties/>
+			</target>
+			<pvs>
+				<pv>
+					<displayname>In Position</displayname>
+					<address>NDWXXXX:MYFEDID:LKUP:LSAMPLE:POSITIONED</address>
+					<recordtype>
+						<io>READ</io>
+					</recordtype>
+				</pv>
+				<pv>
+					<displayname>Sample</displayname>
+					<address>NDWXXXX:MYFEDID:LKUP:LSAMPLE:POSN</address>
+					<recordtype>
+						<io>READ</io>
+					</recordtype>
+				</pv>
+				<pv>
+					<displayname>Sample</displayname>
+					<address>NDWXXXX:MYFEDID:LKUP:LSAMPLE:POSN:SP</address>
+					<recordtype>
+						<io>WRITE</io>
+					</recordtype>
+				</pv>
+			</pvs>
+			<components/>
+		</component>
+		<component>
+			<name>Old style sample changer</name>
+			<type>SAMPLECHANGER</type>
+			<target>
+				<name>Sample changer</name>
+				<type>OPI</type>
+				<properties/>
+			</target>
+			<pvs>
+				<pv>
+					<displayname>In Position</displayname>
+					<address>NDWXXXX:MYFEDID:LKUP:SAMPLE:POSITIONED</address>
+					<recordtype>
+						<io>READ</io>
+					</recordtype>
+				</pv>
+				<pv>
+					<displayname>Sample</displayname>
+					<address>NDWXXXX:MYFEDID:LKUP:SAMPLE:POSN</address>
+					<recordtype>
+						<io>READ</io>
+					</recordtype>
+				</pv>
+				<pv>
+					<displayname>Sample</displayname>
+					<address>NDWXXXX:MYFEDID:LKUP:SAMPLE:POSN:SP</address>
+					<recordtype>
+						<io>WRITE</io>
+					</recordtype>
+				</pv>
+			</pvs>
+			<components/>
+		</component>
+	</components>
+</instrument>
