@@ -24,7 +24,7 @@ $(APPNAME)_LIBS += icpconfig pugixml
 $(APPNAME)_LIBS += autosave
 $(APPNAME)_LIBS += utilities
 $(APPNAME)_LIBS += asubFunctions asyn
-$(APPNAME)_LIBS += seqDev seq pv
+$(APPNAME)_LIBS += seq pv
 $(APPNAME)_LIBS += TinyXML
 ## Add other libraries here ##
 
