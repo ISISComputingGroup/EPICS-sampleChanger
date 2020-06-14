@@ -1,4 +1,5 @@
 #include <errlog.h>
+#include <shareLib.h>
 
 #include "converter.h"
 
