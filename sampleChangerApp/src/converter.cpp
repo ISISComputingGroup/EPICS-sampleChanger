@@ -157,54 +157,71 @@ void converter::loadSlotDetails(TiXmlHandle &hRoot)
 }
 
 // Create the lookup file
-void converter::createLookup() 
+int converter::createLookup(const std::string &selectedRack) 
 {
 	const char *fnameIn = getenv("SLOT_DETAILS_FILE");
 	if ( fnameIn==NULL ) {
 		errlogPrintf("Environment variable SLOT_DETAILS_FILE not set\n");
-		return;
+		return 1;
 	}
 	loadSlotDetails(fnameIn);
 
 	const char *fnameOut = getenv("SAMPLE_LKUP_FILE");
 	if ( fnameOut==NULL ) {
 		errlogPrintf("Environment variable SAMPLE_LKUP_FILE not set\n");
-		return;
+		return 1;
 	}
 	FILE *fpOut = fopen(fnameOut, "w");
 	if ( fpOut==NULL ) {
 		errlogPrintf("Unable to open %s\n", fnameOut);
-		return;
+		return 1;
 	}
 	
-	createLookup(fpOut);
+	int success = createLookup(fpOut, selectedRack);
 	
 	fclose(fpOut);
+    
+    return success;
 }
 
 // Write to the lookup file
-void converter::createLookup(FILE *fpOut) 
+int converter::createLookup(FILE *fpOut, const std::string &selectedRack) 
 {
+    errlogPrintf("sampleChanger: writing motionsetpoints lookup file for selected rack '%s'\n", selectedRack.c_str());
+    int motionsetpoint_defs_written = 0;
+    
 	fprintf(fpOut, "# Convert sample position names to motor coordinates\n");
 	fprintf(fpOut, "# WARNING: Generated file - Do not edit\n");
 	fprintf(fpOut, "# Instead edit samplechanger.xml and press recalc\n");
 
 	for ( std::map<std::string, slotData>::iterator it=m_slots.begin() ; it!=m_slots.end() ; it++ ) {
-		slotData &slot = it->second;
-		//printf("Create Lookup %s\n", slot.name);
-		std::map<std::string, std::map<std::string, samplePosn> >::iterator iter = m_racks.find(slot.rackType);
-		if ( iter==m_racks.end() ) {
-			errlogPrintf("sampleChanger: Unknown rack type '%s' of slot %s\n", slot.rackType.c_str(), slot.name.c_str());
-		}
-		else {
-			for ( std::map<std::string, samplePosn>::iterator it2 = iter->second.begin() ; it2!=iter->second.end() ; it2++ ) {
-				if ( m_dims==1 ) {
-					fprintf(fpOut, "%s%s %f\n", it2->second.name.c_str(), slot.name.c_str(), it2->second.x+slot.x+slot.xoff);					
-				}
-				else {
-					fprintf(fpOut, "%s%s %f %f\n", it2->second.name.c_str(), slot.name.c_str(), it2->second.x+slot.x+slot.xoff, it2->second.y+slot.y+slot.yoff);
-				}
-			}
-		}
+        
+        if (selectedRack == "" || selectedRack == it->first) {
+            slotData &slot = it->second;
+            //printf("Create Lookup %s\n", slot.name);
+            std::map<std::string, std::map<std::string, samplePosn> >::iterator iter = m_racks.find(slot.rackType);
+            if ( iter==m_racks.end() ) {
+                errlogPrintf("sampleChanger: Unknown rack type '%s' of slot %s\n", slot.rackType.c_str(), slot.name.c_str());
+                return 1;
+            }
+            else {
+                for ( std::map<std::string, samplePosn>::iterator it2 = iter->second.begin() ; it2!=iter->second.end() ; it2++ ) {
+                    if ( m_dims==1 ) {
+                        fprintf(fpOut, "%s%s %f\n", it2->second.name.c_str(), slot.name.c_str(), it2->second.x+slot.x+slot.xoff);					
+                    }
+                    else {
+                        fprintf(fpOut, "%s%s %f %f\n", it2->second.name.c_str(), slot.name.c_str(), it2->second.x+slot.x+slot.xoff, it2->second.y+slot.y+slot.yoff);
+                    }
+                }
+            }
+            motionsetpoint_defs_written = 1;
+        }
 	}
+    
+    if (!motionsetpoint_defs_written) {
+        errlogPrintf("sampleChanger: no data written (unknown rack '%s')\n", selectedRack.c_str());
+        return 1;
+    }
+    
+    return 0;
 }

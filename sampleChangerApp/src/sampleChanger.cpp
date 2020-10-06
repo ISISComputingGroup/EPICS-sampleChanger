@@ -5,6 +5,7 @@
 #include <math.h>
 #include <exception>
 #include <iostream>
+#include <algorithm>
 
 #include <epicsTypes.h>
 #include <epicsTime.h>
@@ -33,9 +34,11 @@ sampleChanger::sampleChanger(const char *portName, const char* fileName, int dim
                     ASYN_CANBLOCK, /* asynFlags.  This driver can block but it is not multi-device */
                     1, /* Autoconnect */
                     0,
-                    0), m_fileName(fileName), m_outval(1.0)
+                    0), m_fileName(fileName), m_outval(1.0), m_selectedSlot("")
 {
     createParam(P_recalcString, asynParamOctet, &P_recalc);  
+    createParam(P_set_slotString, asynParamOctet, &P_set_slot);  
+    createParam(P_get_slotString, asynParamOctet, &P_get_slot);  
     createParam(P_outvalString, asynParamFloat64, &P_outval);  
 
 	// initial values
@@ -96,12 +99,28 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
 	if (function == P_recalc) 
 	{
 		converter c(m_dims);
-		c.createLookup();
+		c.createLookup(m_selectedSlot);
 		
 		setDoubleParam(P_outval, ++m_outval);
 		*nActual = strlen(value);
         //printf("Here %s %f\n", m_fileName.c_str(), m_outval);
 	}
+    else if (function == P_set_slot)
+    {
+        std::string newRack = std::string(value);
+        
+        converter c(m_dims);
+		if (c.createLookup(newRack) == 0) {
+            asynPrint(pasynUser, ASYN_TRACE_ERROR, "%s:%s: setting slot=%s \n", driverName, functionName, newRack.c_str());
+            m_selectedSlot = newRack;
+        } else {
+            asynPrint(pasynUser, ASYN_TRACE_ERROR, "%s:%s: setting slot=%s not possible (does not exist). Reverting to old rack (%s)\n", driverName, functionName, newRack.c_str(), m_selectedSlot.c_str());
+            c.createLookup(m_selectedSlot);
+            status = asynError;
+        }
+        
+        *nActual = strnlen(value, maxChars);
+    }
 	else
 	{
         epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize, 
@@ -114,6 +133,32 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
     asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
               "%s:%s: function=%d, name=%s, value=%s\n", 
               driverName, functionName, function, paramName, value);
+	return status;
+}
+
+asynStatus sampleChanger::readOctet(asynUser *pasynUser, char *value, size_t maxChars, size_t *nActual, int* eomReason)
+{
+    int function = pasynUser->reason;
+    const char* functionName = "readOctet";
+    asynStatus status = asynSuccess;
+	
+	if (function == P_get_slot) 
+	{
+		strncpy(value, m_selectedSlot.c_str(), maxChars);
+        *nActual = std::min(m_selectedSlot.length(), maxChars);
+	}
+	else
+	{
+        epicsSnprintf(pasynUser->errorMessage, pasynUser->errorMessageSize, 
+                  "%s:%s: status=%d, function=%d, value=%s, error=%s", 
+                  driverName, functionName, status, function, value, "unknown parameter");
+		status = asynError;
+		*nActual = 0;
+	}
+	callParamCallbacks();
+    asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
+              "%s:%s: function=%d, value=%s\n", 
+              driverName, functionName, function, value);
 	return status;
 }
 

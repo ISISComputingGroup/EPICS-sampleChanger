@@ -29,7 +29,7 @@ class converter
 public:
 	converter(int i);
 	virtual ~converter() {};
-	void createLookup();
+	int createLookup(const std::string &selectedRack);
 	
 private:
 	std::map<std::string, std::map<std::string, samplePosn> > m_racks;
@@ -44,7 +44,7 @@ private:
 	void loadSlotDefs(TiXmlHandle &hRoot);
 	void loadSlotDetails(const char* fname);
 	void loadSlotDetails(TiXmlHandle &hRoot);
-	void createLookup(FILE *fpOut);
+	int createLookup(FILE *fpOut, const std::string &selectedRack);
 };
 
 #endif /* CONVERTER_H */
