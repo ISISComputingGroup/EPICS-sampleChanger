@@ -41,3 +41,11 @@ record(dfanout, "$(P)_FORWARD") {
 	field(FLNK, "$(TARGET_PV1)")
 }
 
+record(waveform, "$(P)AVAILABLE_SLOTS") {
+	field(DTYP,"asynOctetRead")
+	field(FTVL,"CHAR")
+	field(NELM,"8000")
+	field(INP,"@asyn($(LOOKUP),0,0)AVAILABLE_SLOTS")
+	field(SCAN, "1 second")
+}
+

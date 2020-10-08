@@ -30,6 +30,8 @@ public:
 	converter(int i);
 	virtual ~converter() {};
 	int createLookup(const std::string &selectedRack);
+    
+	std::string get_available_slots();
 	
 private:
 	std::map<std::string, std::map<std::string, samplePosn> > m_racks;

@@ -39,6 +39,7 @@ sampleChanger::sampleChanger(const char *portName, const char* fileName, int dim
     createParam(P_recalcString, asynParamOctet, &P_recalc);  
     createParam(P_set_slotString, asynParamOctet, &P_set_slot);  
     createParam(P_get_slotString, asynParamOctet, &P_get_slot);  
+    createParam(P_get_available_slotsString, asynParamOctet, &P_get_available_slots);  
     createParam(P_outvalString, asynParamFloat64, &P_outval);  
 
 	// initial values
@@ -146,6 +147,13 @@ asynStatus sampleChanger::readOctet(asynUser *pasynUser, char *value, size_t max
 	{
 		strncpy(value, m_selectedSlot.c_str(), maxChars);
         *nActual = std::min(m_selectedSlot.length(), maxChars);
+	}
+	else if (function == P_get_available_slots) 
+	{
+        converter c(m_dims);
+        std::string result = c.get_available_slots();
+		strncpy(value, result.c_str(), maxChars);
+        *nActual = std::min(result.length(), maxChars);
 	}
 	else
 	{

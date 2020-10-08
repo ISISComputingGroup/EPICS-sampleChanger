@@ -3,6 +3,8 @@
 
 #include "converter.h"
 
+#define ALL_POSITIONS_NAME "_ALL"
+
 converter::converter(int i=2)
 {
 	m_dims = i;
@@ -184,6 +186,18 @@ int converter::createLookup(const std::string &selectedRack)
     return success;
 }
 
+std::string converter::get_available_slots() 
+{
+    std::string res;
+    for ( std::map<std::string, slotData>::iterator it=m_slots.begin() ; it!=m_slots.end() ; it++ ) {
+        res += it->first;
+        res += " ";
+    }
+    res += ALL_POSITIONS_NAME;
+    res += " END";
+    return res;
+}
+
 // Write to the lookup file
 int converter::createLookup(FILE *fpOut, const std::string &selectedRack) 
 {
@@ -196,7 +210,7 @@ int converter::createLookup(FILE *fpOut, const std::string &selectedRack)
 
 	for ( std::map<std::string, slotData>::iterator it=m_slots.begin() ; it!=m_slots.end() ; it++ ) {
         
-        if (selectedRack == "" || selectedRack == it->first) {
+        if (selectedRack == ALL_POSITIONS_NAME || selectedRack == it->first) {
             slotData &slot = it->second;
             //printf("Create Lookup %s\n", slot.name);
             std::map<std::string, std::map<std::string, samplePosn> >::iterator iter = m_racks.find(slot.rackType);

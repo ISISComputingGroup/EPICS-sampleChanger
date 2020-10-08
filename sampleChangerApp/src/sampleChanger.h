@@ -25,6 +25,7 @@ private:
 	int P_recalc; // string
 	int P_set_slot; // string
 	int P_get_slot; // string
+	int P_get_available_slots; // string
 	int P_outval; // string
 #define FIRST_MSP_PARAM P_recalc
 #define LAST_MSP_PARAM P_outval    
@@ -36,5 +37,6 @@ private:
 #define P_outvalString	"OUTVAL"
 #define P_set_slotString	"SET_SLOT"
 #define P_get_slotString	"GET_SLOT"
+#define P_get_available_slotsString	"AVAILABLE_SLOTS"
 
 #endif /* SAMPLECHANGER_H */
