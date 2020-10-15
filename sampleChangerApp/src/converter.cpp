@@ -212,7 +212,6 @@ int converter::createLookup(FILE *fpOut, const std::string &selectedRack)
         
         if (selectedRack == ALL_POSITIONS_NAME || selectedRack == it->first) {
             slotData &slot = it->second;
-            //printf("Create Lookup %s\n", slot.name);
             std::map<std::string, std::map<std::string, samplePosn> >::iterator iter = m_racks.find(slot.rackType);
             if ( iter==m_racks.end() ) {
                 errlogPrintf("sampleChanger: Unknown rack type '%s' of slot %s\n", slot.rackType.c_str(), slot.name.c_str());
