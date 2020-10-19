@@ -28,6 +28,7 @@ class converter
 {
 public:
     converter(int i);
+    converter(int i, std::map<std::string, std::map<std::string, samplePosn> > racks, std::map<std::string, slotData> slots);
     virtual ~converter() {};
     int createLookup(const std::string &selectedRack);
     

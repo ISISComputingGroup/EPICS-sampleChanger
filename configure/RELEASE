@@ -12,6 +12,7 @@ SNCSEQ=$(SUPPORT)/seq/master
 SQLITE=$(SUPPORT)/sqlite/master
 TINYXML=$(SUPPORT)/TinyXML/master
 UTILITIES=$(SUPPORT)/utilities/master
+GTEST=$(SUPPORT)/googletest/master
 
 # optional extra local definitions here
 -include $(TOP)/configure/RELEASE.private

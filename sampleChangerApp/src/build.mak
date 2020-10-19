@@ -36,9 +36,24 @@ $(APPNAME)_SRCS += converter.cpp sampleChanger.cpp
 # Finally link to the EPICS Base libraries
 $(APPNAME)_LIBS += $(EPICS_BASE_IOC_LIBS)
 
+ifeq ($(findstring 10.0,$(VCVERSION)),)
+    # googleTest Runner
+    GTESTPROD_HOST+= runner
+    runner_LIBS += $(EPICS_BASE_IOC_LIBS) TinyXML
+    runner_SRCS += converter.cpp converterTests.cpp
+endif
+
 #===========================
 
 include $(TOP)/configure/RULES
 #----------------------------------------
 #  ADD RULES AFTER THIS LINE
+# include $(GTEST)/cfg/compat.RULES_BUILD
 
+
+ifdef T_A
+install: dllPath.bat
+
+dllPath.bat:
+	$(CONVERTRELEASE) -a $(T_A) -T $(IOCS_APPL_TOP) $@
+endif

@@ -11,6 +11,14 @@ converter::converter(int i=2)
     loadDefRackDefs("RACKDEFS");
 } 
 
+// alternative constructor, only for testing
+converter::converter(int i, std::map<std::string, std::map<std::string, samplePosn> > racks, std::map<std::string, slotData> slots)
+{
+    m_dims = i;
+    m_racks = racks;
+    m_slots = slots;
+} 
+
 void converter::loadDefRackDefs(const char* env_fname) 
 {
     const char *fname = getenv(env_fname);
