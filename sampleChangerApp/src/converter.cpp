@@ -165,7 +165,7 @@ std::map<std::string, slotData> converter::loadSlotDetails(TiXmlHandle &hRoot)
 }
 
 // Create the lookup file
-int converter::createLookup(const std::string &selectedRack) 
+int converter::createLookup() 
 {
     const char *fnameIn = getenv("SLOT_DETAILS_FILE");
     if ( fnameIn==NULL ) {
@@ -185,11 +185,21 @@ int converter::createLookup(const std::string &selectedRack)
         return 1;
     }
     
-    int success = createLookup(fpOut, selectedRack);
+    int success = createLookup(fpOut);
     
     fclose(fpOut);
     
     return success;
+}
+
+bool converter::checkSlotExists(std::string slotName) {
+    try {
+        m_positions_for_each_slot.at(slotName);
+        return true;
+    }
+    catch (const std::out_of_range &e) {
+        return false;
+    }
 }
 
 std::string converter::get_available_slots() 
@@ -204,41 +214,60 @@ std::string converter::get_available_slots()
     return res;
 }
 
-// Write to the lookup file
-int converter::createLookup(FILE *fpOut, const std::string &selectedRack) 
+std::string converter::get_available_in_slot(std::string slot)
 {
-    errlogPrintf("sampleChanger: writing motionsetpoints lookup file for selected rack '%s'\n", selectedRack.c_str());
+    std::string res;
+    std::list<std::string> positions;
+    try {
+        positions = m_positions_for_each_slot.at(slot);
+    } catch (const std::out_of_range &e) {
+        errlogPrintf("Slot '%s' unknown, returning all positions\n", slot.c_str());
+        slot = ALL_POSITIONS_NAME;
+    }
+    for (std::list<std::string>::iterator it = positions.begin(); it != positions.end(); it++) {
+        res += *it + " ";
+    }
+    res += "END";
+    return res;
+}
+
+// Write to the lookup file
+int converter::createLookup(FILE *fpOut) 
+{
+    errlogPrintf("sampleChanger: writing motionsetpoints lookup file\n");
     int motionsetpoint_defs_written = 0;
-    
+    m_positions_for_each_slot.clear();
+
     fprintf(fpOut, "# Convert sample position names to motor coordinates\n");
     fprintf(fpOut, "# WARNING: Generated file - Do not edit\n");
     fprintf(fpOut, "# Instead edit samplechanger.xml and press recalc\n");
 
     for ( std::map<std::string, slotData>::iterator it=m_slots.begin() ; it!=m_slots.end() ; it++ ) {
         
-        if (selectedRack == ALL_POSITIONS_NAME || selectedRack == it->first) {
-            slotData &slot = it->second;
-            std::map<std::string, std::map<std::string, samplePosn> >::iterator iter = m_racks.find(slot.rackType);
-            if ( iter==m_racks.end() ) {
-                errlogPrintf("sampleChanger: Unknown rack type '%s' of slot %s\n", slot.rackType.c_str(), slot.name.c_str());
-                return 1;
-            }
-            else {
-                for ( std::map<std::string, samplePosn>::iterator it2 = iter->second.begin() ; it2!=iter->second.end() ; it2++ ) {
-                    if ( m_dims==1 ) {
-                        fprintf(fpOut, "%s%s %f\n", it2->second.name.c_str(), slot.sampleSuffix.c_str(), it2->second.x+slot.x+slot.xoff);                    
-                    }
-                    else {
-                        fprintf(fpOut, "%s%s %f %f\n", it2->second.name.c_str(), slot.sampleSuffix.c_str(), it2->second.x+slot.x+slot.xoff, it2->second.y+slot.y+slot.yoff);
-                    }
+        slotData &slot = it->second;
+        std::map<std::string, std::map<std::string, samplePosn> >::iterator iter = m_racks.find(slot.rackType);
+        if ( iter==m_racks.end() ) {
+            errlogPrintf("sampleChanger: Unknown rack type '%s' of slot %s\n", slot.rackType.c_str(), slot.name.c_str());
+            return 1;
+        }
+        else {
+            for ( std::map<std::string, samplePosn>::iterator it2 = iter->second.begin() ; it2!=iter->second.end() ; it2++ ) {
+                std::string full_position_name = it2->second.name + slot.sampleSuffix;
+                m_positions_for_each_slot[ALL_POSITIONS_NAME].push_back(full_position_name);
+                m_positions_for_each_slot[slot.name].push_back(full_position_name);
+                if ( m_dims==1 ) {
+                    fprintf(fpOut, "%s %f\n", full_position_name.c_str(), it2->second.x+slot.x+slot.xoff);                    
+                }
+                else {
+                    fprintf(fpOut, "%s %f %f\n", full_position_name.c_str(), it2->second.x+slot.x+slot.xoff, it2->second.y+slot.y+slot.yoff);
                 }
             }
-            motionsetpoint_defs_written = 1;
         }
+        motionsetpoint_defs_written = 1;
     }
     
     if (!motionsetpoint_defs_written) {
-        errlogPrintf("sampleChanger: no data written (unknown rack '%s')\n", selectedRack.c_str());
+        errlogPrintf("sampleChanger: no data written\n");
         return 1;
     }
     
