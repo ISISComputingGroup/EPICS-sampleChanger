@@ -231,12 +231,17 @@ std::string converter::get_available_in_slot(std::string slot)
     return res;
 }
 
+std::string converter::get_slot_for_position(std::string position) {
+    return m_slot_for_each_position.at(position);
+}
+
 // Write to the lookup file
 int converter::createLookup(FILE *fpOut) 
 {
     errlogPrintf("sampleChanger: writing motionsetpoints lookup file\n");
     int motionsetpoint_defs_written = 0;
     m_positions_for_each_slot.clear();
+    m_slot_for_each_position.clear();
 
     fprintf(fpOut, "# Convert sample position names to motor coordinates\n");
     fprintf(fpOut, "# WARNING: Generated file - Do not edit\n");
@@ -255,6 +260,8 @@ int converter::createLookup(FILE *fpOut)
                 std::string full_position_name = it2->second.name + slot.sampleSuffix;
                 m_positions_for_each_slot[ALL_POSITIONS_NAME].push_back(full_position_name);
                 m_positions_for_each_slot[slot.name].push_back(full_position_name);
+                m_slot_for_each_position[full_position_name] = slot.name;
+
                 if ( m_dims==1 ) {
                     fprintf(fpOut, "%s %f\n", full_position_name.c_str(), it2->second.x+slot.x+slot.xoff);                    
                 }

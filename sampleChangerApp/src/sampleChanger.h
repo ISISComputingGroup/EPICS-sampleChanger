@@ -21,6 +21,8 @@ private:
     int P_recalc; // string
     int P_set_slot; // string
     int P_get_slot; // string
+    int P_slot_from_pos; // string
+    int P_set_posn; // string
     int P_get_available_slots; // string
     int P_get_available_in_selected_slot; // string
 #define FIRST_MSP_PARAM P_recalc
@@ -32,6 +34,8 @@ private:
 #define P_recalcString        "RECALC"
 #define P_set_slotString    "SET_SLOT"
 #define P_get_slotString    "GET_SLOT"
+#define P_slot_from_posString    "SLOT_FROM_POS"
+#define P_set_posnString    "SET_POSN"
 #define P_get_available_slotsString    "AVAILABLE_SLOTS"
 #define P_get_available_in_selected_slotsString    "AVAILABLE_IN_SLOT"
 

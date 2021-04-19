@@ -39,6 +39,8 @@ sampleChanger::sampleChanger(const char *portName, const char* fileName, int dim
     createParam(P_recalcString, asynParamOctet, &P_recalc);  
     createParam(P_set_slotString, asynParamOctet, &P_set_slot);  
     createParam(P_get_slotString, asynParamOctet, &P_get_slot);  
+    createParam(P_slot_from_posString, asynParamOctet, &P_slot_from_pos);
+    createParam(P_set_posnString, asynParamOctet, &P_set_posn);
     createParam(P_get_available_slotsString, asynParamOctet, &P_get_available_slots);  
     createParam(P_get_available_in_selected_slotsString, asynParamOctet, &P_get_available_in_selected_slot);
     
@@ -76,6 +78,24 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
         }
         
         *nActual = strnlen(value, maxChars);
+    }
+    else if (function == P_set_posn)
+    {
+        converter c(m_dims);
+        c.createLookup();
+
+        std::string posn = std::string(value);
+
+        try {
+            std::string slot = c.get_slot_for_position(posn);
+            setStringParam(P_slot_from_pos, slot);
+        }
+        catch (const std::out_of_range &e) {
+            asynPrint(pasynUser, ASYN_TRACE_ERROR, "%s:%s: position not recognised: %s\n", driverName, functionName, posn.c_str());
+            status = asynError;
+        }
+
+        *nActual = strlen(value);
     }
     else
     {

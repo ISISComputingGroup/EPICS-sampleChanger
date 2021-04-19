@@ -38,7 +38,7 @@ public:
     std::string get_available_slots();
     std::string get_available_in_slot(std::string slot);
     bool checkSlotExists(std::string slotName);
-   
+    std::string get_slot_for_position(std::string slot);
 
 private:
     // rack : (position : position_data)
@@ -49,6 +49,9 @@ private:
 
     // slot : list(positions)
     std::map<std::string, std::list<std::string>> m_positions_for_each_slot;
+
+    // position : slot
+    std::map<std::string, std::string> m_slot_for_each_position;
 
     int m_dims;
 

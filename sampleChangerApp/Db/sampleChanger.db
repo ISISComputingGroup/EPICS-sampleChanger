@@ -7,9 +7,9 @@ record(stringout, "$(P)RECALC") {
 
 record(calcout, "$(P)_FORWARD") {
 	field(DESC, "Tell the lookup to reload")
-	field(INPA, "$(TARGET_PV1)")
+	field(INPA, "$(MOT_SET_POINT)RESET")
 	field(CALC, "A+1")
-	field(OUT, "$(TARGET_PV1) PP")
+	field(OUT, "$(MOT_SET_POINT)RESET PP")
 }
 
 record(stringout, "$(P)SLOT:SP") {
@@ -29,6 +29,33 @@ record(stringin, "$(P)SLOT") {
 }
 
 alias("$(P)SLOT", "$(P)SLOT:SP:RBV")
+
+record(stringin, "$(P)SLOT_FROM_POS") {
+	field(DESC, "Get the slot from the position")
+	field(DTYP, "asynOctetRead")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(LOOKUP),0,0)SLOT_FROM_POS")
+	field(FLNK, "$(P)_FWD_SLOT")
+}
+
+record(sseq, "$(P)_FWD_SLOT") {
+    field(DESC, "Set the slot from the position")
+	field(DOL1,"$(P)SLOT_FROM_POS")
+	field(LNK1,"$(P)SLOT:SP PP")
+}
+
+record(stringout, "$(P)POSN:SP") {
+	field(DESC, "Set the posn which is in use")
+	field(DTYP,"asynOctetWrite")
+	field(OUT,"@asyn($(LOOKUP),0,0)SET_POSN")
+}
+
+record(sseq, "$(P)POSN:SP:RBV") {
+    field(DESC, "Get the posn from the lookup")
+	field(SCAN, ".1 second")
+	field(DOL1,"$(MOT_SET_POINT)POSN:SP:RBV CA")
+	field(LNK1,"$(P)POSN:SP PP")
+}
 
 record(waveform, "$(P)AVAILABLE_SLOTS") {
 	field(DTYP,"asynOctetRead")
