@@ -2,14 +2,21 @@ record(stringout, "$(P)RECALC") {
 	field(DTYP,"asynOctetWrite")
 	field(OUT,"@asyn($(LOOKUP),0,0)RECALC")
 	field(DESC, "Update the sample positions")
-	field(FLNK, "$(P)_OUTVAL")
+	field(FLNK, "$(P)_FORWARD")
+}
+
+record(calcout, "$(P)_FORWARD") {
+	field(DESC, "Tell the lookup to reload")
+	field(INPA, "$(MOT_SET_POINT)RESET")
+	field(CALC, "A+1")
+	field(OUT, "$(MOT_SET_POINT)RESET PP")
 }
 
 record(stringout, "$(P)SLOT:SP") {
 	field(DTYP,"asynOctetWrite")
 	field(OUT,"@asyn($(LOOKUP),0,0)SET_SLOT")
 	field(DESC, "Set the slot which is in use")
-    field(FLNK, "$(P)RECALC")
+    field(FLNK, "$(P)AVAILABLE_IN_SLOT")
     info(autosaveFields, "VAL")
     field(PINI, "YES")
 }
@@ -23,22 +30,31 @@ record(stringin, "$(P)SLOT") {
 
 alias("$(P)SLOT", "$(P)SLOT:SP:RBV")
 
-record(ai, "$(P)_OUTVAL") {
-	field(DESC, "Filter other axis")
-	field(DTYP,"asynFloat64")
-	field(INP,"@asyn($(LOOKUP),0,0)OUTVAL")
-	field(PINI, "YES")
-	field(FLNK, "$(P)_FORWARD")
+record(stringin, "$(P)SLOT_FROM_POS") {
+	field(DESC, "Get the slot from the position")
+	field(DTYP, "asynOctetRead")
+	field(SCAN, "I/O Intr")
+	field(INP, "@asyn($(LOOKUP),0,0)SLOT_FROM_POS")
+	field(FLNK, "$(P)_FWD_SLOT")
 }
 
-record(dfanout, "$(P)_FORWARD") {
-	field(DESC, "Tell the lookup to reload")
-	field(OMSL, "closed_loop")
-	field(DOL, "$(P)_OUTVAL")
-	field(OUTA, "$(TARGET_PV1)")
-	field(SELM, "Mask")
-	field(SELN, "1")
-	field(FLNK, "$(TARGET_PV1)")
+record(sseq, "$(P)_FWD_SLOT") {
+    field(DESC, "Set the slot from the position")
+	field(DOL1,"$(P)SLOT_FROM_POS")
+	field(LNK1,"$(P)SLOT:SP PP")
+}
+
+record(stringout, "$(P)POSN:SP") {
+	field(DESC, "Set the posn which is in use")
+	field(DTYP,"asynOctetWrite")
+	field(OUT,"@asyn($(LOOKUP),0,0)SET_POSN")
+}
+
+record(sseq, "$(P)POSN:SP:RBV") {
+    field(DESC, "Get the posn from the lookup")
+	field(SCAN, ".1 second")
+	field(DOL1,"$(MOT_SET_POINT)POSN:SP:RBV CA")
+	field(LNK1,"$(P)POSN:SP PP")
 }
 
 record(waveform, "$(P)AVAILABLE_SLOTS") {
@@ -47,5 +63,13 @@ record(waveform, "$(P)AVAILABLE_SLOTS") {
 	field(NELM,"8000")
 	field(INP,"@asyn($(LOOKUP),0,0)AVAILABLE_SLOTS")
 	field(SCAN, "1 second")
+}
+
+record(waveform, "$(P)AVAILABLE_IN_SLOT") {
+	field(DTYP,"asynOctetRead")
+	field(FTVL,"CHAR")
+	field(NELM,"8000")
+	field(INP,"@asyn($(LOOKUP),0,0)AVAILABLE_IN_SLOT")
+	field(FLNK,"$(P)RECALC")
 }
 
