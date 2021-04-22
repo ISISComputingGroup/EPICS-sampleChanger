@@ -8,8 +8,8 @@
 namespace {
 
     TEST(ConverterTests, all_and_end_get_added_to_list_of_slots) {
-        std::unordered_map<std::string, std::unordered_map<std::string, samplePosn> > racks;
-        std::unordered_map<std::string, slotData> slots;
+        std::map<std::string, std::map<std::string, samplePosn> > racks;
+        std::map<std::string, slotData> slots;
         
         slotData slot;
         std::string slotname("TEST");
@@ -22,8 +22,8 @@ namespace {
     }
 
     TEST(ConverterTests, GIVEN_xml_with_no_sample_suffix_WHEN_converted_THEN_suffix_is_name) {
-        std::unordered_map<std::string, std::unordered_map<std::string, samplePosn> > racks;
-        std::unordered_map<std::string, slotData> slots;
+        std::map<std::string, std::map<std::string, samplePosn> > racks;
+        std::map<std::string, slotData> slots;
 
         std::string filedata = "<slots> \
                         <slot name = \"T\" rack_type = \"NarrowX10\" xoff = \"284.7\" yoff = \"-125.0\" / > \

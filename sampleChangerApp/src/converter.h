@@ -1,7 +1,7 @@
 #ifndef CONVERTER_H
 #define CONVERTER_H
  
-#include <unordered_map>
+#include <map>
 #include <string>
 
 #define TIXML_USE_STL 
@@ -32,15 +32,15 @@ public:
     converter(int i, std::map<std::string, std::map<std::string, samplePosn> > racks, std::map<std::string, slotData> slots);
     virtual ~converter() {};
     int createLookup(const std::string &selectedRack);
-    std::unordered_map<std::string, slotData> loadSlotDetails(TiXmlHandle &hRoot);
+    std::map<std::string, slotData> loadSlotDetails(TiXmlHandle &hRoot);
     
     std::string get_available_slots();
    
 
 private:
-    std::unordered_map<std::string, std::unordered_map<std::string, samplePosn> > m_racks;
+    std::map<std::string, std::map<std::string, samplePosn> > m_racks;
     
-    std::unordered_map<std::string, slotData> m_slots;
+    std::map<std::string, slotData> m_slots;
 
     int m_dims;
 

@@ -12,7 +12,7 @@ converter::converter(int i=2)
 } 
 
 // alternative constructor, only for testing
-converter::converter(int i, std::unordered_map<std::string, std::unordered_map<std::string, samplePosn> > racks, std::map<std::string, slotData> slots)
+converter::converter(int i, std::map<std::string, std::map<std::string, samplePosn> > racks, std::map<std::string, slotData> slots)
 {
     m_dims = i;
     m_racks = racks;
@@ -62,7 +62,7 @@ void converter::loadRackDefs(TiXmlHandle &hRoot)
     
     for( TiXmlElement* pElem=hRoot.FirstChild("racks").FirstChild("rack").Element(); pElem; pElem=pElem->NextSiblingElement())
     {
-        std::unordered_map<std::string, samplePosn> posns;
+        std::map<std::string, samplePosn> posns;
         std::string rackName = pElem->Attribute("name");
         for ( TiXmlElement *pRack = pElem->FirstChildElement("position") ; pRack ; pRack=pRack->NextSiblingElement() ) {
             samplePosn posn;
@@ -136,13 +136,13 @@ void converter::loadSlotDetails(const char* fname)
 }
 
 // Extract slot details from the xml
-std::unordered_map<std::string, slotData> converter::loadSlotDetails(TiXmlHandle &hRoot)
+std::map<std::string, slotData> converter::loadSlotDetails(TiXmlHandle &hRoot)
 {
     for( TiXmlElement* pElem=hRoot.FirstChild("slot").Element(); pElem; pElem=pElem->NextSiblingElement())
     {
         std::string slotName = pElem->Attribute("name");
         
-        std::unordered_map<std::string, slotData>::iterator iter = m_slots.find(slotName);
+        std::map<std::string, slotData>::iterator iter = m_slots.find(slotName);
         if ( iter==m_slots.end() ) {
             errlogPrintf("sampleChanger: Unknown slot '%s' in slot details\n", slotName.c_str());
         }
@@ -195,7 +195,7 @@ int converter::createLookup(const std::string &selectedRack)
 std::string converter::get_available_slots() 
 {
     std::string res;
-    for ( std::unordered_map<std::string, slotData>::iterator it=m_slots.begin() ; it!=m_slots.end() ; it++ ) {
+    for ( std::map<std::string, slotData>::iterator it=m_slots.begin() ; it!=m_slots.end() ; it++ ) {
         res += it->first;
         res += " ";
     }
@@ -214,17 +214,17 @@ int converter::createLookup(FILE *fpOut, const std::string &selectedRack)
     fprintf(fpOut, "# WARNING: Generated file - Do not edit\n");
     fprintf(fpOut, "# Instead edit samplechanger.xml and press recalc\n");
 
-    for ( std::unordered_map<std::string, slotData>::iterator it=m_slots.begin() ; it!=m_slots.end() ; it++ ) {
+    for ( std::map<std::string, slotData>::iterator it=m_slots.begin() ; it!=m_slots.end() ; it++ ) {
         
         if (selectedRack == ALL_POSITIONS_NAME || selectedRack == it->first) {
             slotData &slot = it->second;
-            std::unordered_map<std::string, std::unordered_map<std::string, samplePosn> >::iterator iter = m_racks.find(slot.rackType);
+            std::map<std::string, std::map<std::string, samplePosn> >::iterator iter = m_racks.find(slot.rackType);
             if ( iter==m_racks.end() ) {
                 errlogPrintf("sampleChanger: Unknown rack type '%s' of slot %s\n", slot.rackType.c_str(), slot.name.c_str());
                 return 1;
             }
             else {
-                for ( std::unordered_map<std::string, samplePosn>::iterator it2 = iter->second.begin() ; it2!=iter->second.end() ; it2++ ) {
+                for ( std::map<std::string, samplePosn>::iterator it2 = iter->second.begin() ; it2!=iter->second.end() ; it2++ ) {
                     if ( m_dims==1 ) {
                         fprintf(fpOut, "%s%s %f\n", it2->second.name.c_str(), slot.sampleSuffix.c_str(), it2->second.x+slot.x+slot.xoff);                    
                     }
