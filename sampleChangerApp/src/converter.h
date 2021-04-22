@@ -17,6 +17,7 @@ struct samplePosn
 struct slotData
 {
     std::string name;
+    std::string sampleSuffix;
     double x;
     double y;
     std::string rackType;
@@ -31,14 +32,16 @@ public:
     converter(int i, std::map<std::string, std::map<std::string, samplePosn> > racks, std::map<std::string, slotData> slots);
     virtual ~converter() {};
     int createLookup(const std::string &selectedRack);
+    std::map<std::string, slotData> loadSlotDetails(TiXmlHandle &hRoot);
     
     std::string get_available_slots();
-    
+   
+
 private:
     std::map<std::string, std::map<std::string, samplePosn> > m_racks;
     
     std::map<std::string, slotData> m_slots;
-    
+
     int m_dims;
 
     void loadDefRackDefs(const char* env_fname);
@@ -46,7 +49,6 @@ private:
     void loadRackDefs(TiXmlHandle &hRoot);
     void loadSlotDefs(TiXmlHandle &hRoot);
     void loadSlotDetails(const char* fname);
-    void loadSlotDetails(TiXmlHandle &hRoot);
     int createLookup(FILE *fpOut, const std::string &selectedRack);
 };
 

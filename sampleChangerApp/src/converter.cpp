@@ -59,11 +59,9 @@ void converter::loadRackDefs(const char* fname)
 void converter::loadRackDefs(TiXmlHandle &hRoot)
 {
     m_racks.clear();
-    //printf("Loading rack defs\n");
     
     for( TiXmlElement* pElem=hRoot.FirstChild("racks").FirstChild("rack").Element(); pElem; pElem=pElem->NextSiblingElement())
     {
-        //printf("Loading rack defs - racks\n");
         std::map<std::string, samplePosn> posns;
         std::string rackName = pElem->Attribute("name");
         for ( TiXmlElement *pRack = pElem->FirstChildElement("position") ; pRack ; pRack=pRack->NextSiblingElement() ) {
@@ -75,7 +73,7 @@ void converter::loadRackDefs(TiXmlHandle &hRoot)
             else {
                 errlogPrintf("sampleChanger: rack has no name attribute \"%s\"\n", rackName.c_str());
             }
-            //printf("Loading rack defs - %s\n", posn.name.c_str());
+
             if ( pRack->QueryDoubleAttribute("x", &posn.x)!=TIXML_SUCCESS ) {
                 errlogPrintf("sampleChanger: unable to read x attribute \"%s\" \"%s\"\n", rackName.c_str(), posn.name.c_str());
             }
@@ -109,8 +107,6 @@ void converter::loadSlotDefs(TiXmlHandle &hRoot)
         }
         
         m_slots[slotName] = slot;
-        
-        //printf("Def slot %s\n", slot.name);
     }
 }
 
@@ -140,9 +136,8 @@ void converter::loadSlotDetails(const char* fname)
 }
 
 // Extract slot details from the xml
-void converter::loadSlotDetails(TiXmlHandle &hRoot)
+std::map<std::string, slotData> converter::loadSlotDetails(TiXmlHandle &hRoot)
 {
-    //printf("Slot details\n");
     for( TiXmlElement* pElem=hRoot.FirstChild("slot").Element(); pElem; pElem=pElem->NextSiblingElement())
     {
         std::string slotName = pElem->Attribute("name");
@@ -153,17 +148,20 @@ void converter::loadSlotDetails(TiXmlHandle &hRoot)
         }
         else {
             iter->second.rackType = pElem->Attribute("rack_type");
-            
+
+            if (pElem->QueryStringAttribute("sample_suffix", &(iter->second.sampleSuffix)) == TIXML_NO_ATTRIBUTE){
+                iter->second.sampleSuffix = slotName;
+            }
+
             if ( pElem->QueryDoubleAttribute("xoff", &(iter->second.xoff))!=TIXML_SUCCESS ) {
                 errlogPrintf("sampleChanger: unable to read slot xoff attribute \"%s\"\n", slotName.c_str());
             }
             if ( m_dims>1 && pElem->QueryDoubleAttribute("yoff", &(iter->second.yoff))!=TIXML_SUCCESS ) {
                 errlogPrintf("sampleChanger: unable to read slot yoff attribute \"%s\"\n", slotName.c_str());
             }
-        
-            //printf("Det slot %s %s %f\n", iter->second.name, iter->second.rackType, iter->second.xoff);
         }
     }
+    return m_slots;
 }
 
 // Create the lookup file
@@ -228,10 +226,10 @@ int converter::createLookup(FILE *fpOut, const std::string &selectedRack)
             else {
                 for ( std::map<std::string, samplePosn>::iterator it2 = iter->second.begin() ; it2!=iter->second.end() ; it2++ ) {
                     if ( m_dims==1 ) {
-                        fprintf(fpOut, "%s%s %f\n", it2->second.name.c_str(), slot.name.c_str(), it2->second.x+slot.x+slot.xoff);                    
+                        fprintf(fpOut, "%s%s %f\n", it2->second.name.c_str(), slot.sampleSuffix.c_str(), it2->second.x+slot.x+slot.xoff);                    
                     }
                     else {
-                        fprintf(fpOut, "%s%s %f %f\n", it2->second.name.c_str(), slot.name.c_str(), it2->second.x+slot.x+slot.xoff, it2->second.y+slot.y+slot.yoff);
+                        fprintf(fpOut, "%s%s %f %f\n", it2->second.name.c_str(), slot.sampleSuffix.c_str(), it2->second.x+slot.x+slot.xoff, it2->second.y+slot.y+slot.yoff);
                     }
                 }
             }

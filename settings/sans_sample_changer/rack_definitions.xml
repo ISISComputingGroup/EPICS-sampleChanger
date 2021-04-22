@@ -104,6 +104,6 @@
 		<slot name="WB" x="0" y="0"/>
         <slot name="CT" x="0" y="0"/>
 		<slot name="CB" x="0" y="0"/>        
-		<slot name="GT" x="0" y="0"/>        
+		<slot name="Durham_Top" x="0" y="0"/>        
 	</slots>
 </definitions>
