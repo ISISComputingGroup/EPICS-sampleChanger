@@ -44,17 +44,27 @@ public:
     void loadRackDefs(TiXmlHandle& hRoot);
     void loadSlotDefs(TiXmlHandle& hRoot);
 
+    // this is effectively a map of string to slotData but preserving order
     std::vector<std::pair<std::string, slotData>> v_slots;
+
+    // this is mapping a string to a vector of pairs
+    // example: "A" -> [("B", 0), ("C", 1)]
     std::vector<std::pair<std::string, std::vector<std::pair<std::string, samplePosn>>>> v_racks;
 
 private:
     // vectors of pairs are used here rather than maps to preserve insertion order
 
     // slot : list(positions)
+    // this is effectively mapping of slot (string) to a list of positions (strings)
     std::vector<std::pair<std::string, std::list<std::string>>> v_positions_for_each_slot;
 
+    std::vector<std::pair<std::string, std::list<std::string>>>::iterator find_in_positions(std::string slot);
+
     // position : slot
+    // this is effectively a map of string to string but preserving order
     std::vector<std::pair<std::string, std::string>> v_slot_for_each_position;
+
+    std::vector<std::pair<std::string, std::string>>::iterator find_in_slots(std::string name);
 
     int m_dims;
 

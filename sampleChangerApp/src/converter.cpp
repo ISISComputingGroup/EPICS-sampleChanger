@@ -19,6 +19,22 @@ converter::converter(int i, std::vector<std::pair<std::string, std::vector<std::
     v_slots = slots;
 }
 
+std::vector<std::pair<std::string, std::list<std::string>>>::iterator converter::find_in_positions(std::string slot)
+{
+    std::vector<std::pair<std::string, std::list<std::string>>>::iterator it =
+        std::find_if(v_positions_for_each_slot.begin(), v_positions_for_each_slot.end(),
+            [&](std::pair<std::string, std::list<std::string>> pair) {return pair.first == slot; });
+    return it;
+}
+
+std::vector<std::pair<std::string, std::string>>::iterator converter::find_in_slots(std::string name)
+{
+    std::vector<std::pair<std::string, std::string>>::iterator slot_it =
+        std::find_if(v_slot_for_each_position.begin(), v_slot_for_each_position.end(),
+            [&](std::pair<std::string, std::string> pair) {return pair.first == name; });
+    return slot_it;
+}
+
 void converter::loadDefRackDefs(const char* env_fname)
 {
     const char* fname = getenv(env_fname);
@@ -193,9 +209,7 @@ int converter::createLookup()
 
 bool converter::checkSlotExists(std::string slotName) {
     try {
-        std::vector<std::pair<std::string, std::list<std::string>>>::iterator it =
-            std::find_if(v_positions_for_each_slot.begin(), v_positions_for_each_slot.end(),
-                [&](std::pair<std::string, std::list<std::string>> pair) {return pair.first == slotName; });
+        std::vector<std::pair<std::string, std::list<std::string>>>::iterator it = find_in_positions(slotName);
         if (it == v_positions_for_each_slot.end())
         {
             throw std::out_of_range("slot doesnt exist");
@@ -224,9 +238,7 @@ std::string converter::get_available_in_slot(std::string slot)
     std::string res;
     std::list<std::string> positions;
     try {
-        std::vector<std::pair<std::string, std::list<std::string>>>::iterator it =
-            std::find_if(v_positions_for_each_slot.begin(), v_positions_for_each_slot.end(),
-                [&](std::pair<std::string, std::list<std::string>> pair) {return pair.first == slot; });
+        std::vector<std::pair<std::string, std::list<std::string>>>::iterator it = find_in_positions(slot);
         if (it == v_positions_for_each_slot.end())
         {
             throw std::out_of_range("not available in slot");
@@ -246,14 +258,11 @@ std::string converter::get_available_in_slot(std::string slot)
 
 std::string converter::get_slot_for_position(std::string position)
 {
-    std::vector<std::pair<std::string, std::string>>::iterator it =
-        std::find_if(v_slot_for_each_position.begin(), v_slot_for_each_position.end(),
-            [&](std::pair<std::string, std::string> pair) {return pair.first == position; });
-    if (it == v_slot_for_each_position.end())
+    if (find_in_slots(position) == v_slot_for_each_position.end())
     {
         throw std::out_of_range("\nSlot not found at given position");
     }
-    return it->second;
+    return find_in_slots(position)->second;
 }
 
 // Write to the lookup file
@@ -281,48 +290,31 @@ int converter::createLookup(FILE* fpOut)
             for (std::vector<std::pair<std::string, samplePosn>>::iterator it2 = iter->second.begin(); it2 != iter->second.end(); it2++) {
                 std::string full_position_name = it2->second.name + slot.sampleSuffix;
 
-                std::vector<std::pair<std::string, std::list<std::string>>>::iterator pos_it =
-                    std::find_if(v_positions_for_each_slot.begin(), v_positions_for_each_slot.end(),
-                        [&](std::pair<std::string, std::list<std::string>> pair) {return pair.first == ALL_POSITIONS_NAME; });
+                std::vector<std::pair<std::string, std::list<std::string>>>::iterator pos_it = find_in_positions(ALL_POSITIONS_NAME);
                 if (pos_it == v_positions_for_each_slot.end())
                 {
                     v_positions_for_each_slot.push_back(std::make_pair(ALL_POSITIONS_NAME, std::list<std::string>()));
                 }
-                (std::find_if(v_positions_for_each_slot.begin(), v_positions_for_each_slot.end(),
-                    [&](std::pair<std::string, std::list<std::string>> pair) {return pair.first == ALL_POSITIONS_NAME; }))
-                    ->second.push_back(full_position_name);
+                find_in_positions(ALL_POSITIONS_NAME)->second.push_back(full_position_name);
 
-                std::vector<std::pair<std::string, std::list<std::string>>>::iterator pos_it2 =
-                    std::find_if(v_positions_for_each_slot.begin(), v_positions_for_each_slot.end(),
-                        [&](std::pair<std::string, std::list<std::string>> pair) {return pair.first == slot.name; });
+                std::vector<std::pair<std::string, std::list<std::string>>>::iterator pos_it2 = find_in_positions(slot.name);
                 if (pos_it2 == v_positions_for_each_slot.end())
                 {
                     v_positions_for_each_slot.push_back(std::make_pair(slot.name, std::list<std::string>()));
                 }
-                (std::find_if(v_positions_for_each_slot.begin(), v_positions_for_each_slot.end(),
-                    [&](std::pair<std::string, std::list<std::string>> pair) {return pair.first == slot.name; }))
-                    ->second.push_back(full_position_name);
+                find_in_positions(slot.name)->second.push_back(full_position_name);
 
-                try
+                std::vector<std::pair<std::string, std::string>>::iterator slot_it = find_in_slots(full_position_name);
+                if (slot_it == v_slot_for_each_position.end())
                 {
-                    std::vector<std::pair<std::string, std::string>>::iterator slot_it =
-                        std::find_if(v_slot_for_each_position.begin(), v_slot_for_each_position.end(),
-                            [&](std::pair<std::string, std::string> pair) {return pair.first == full_position_name; });
-                    if (slot_it == v_slot_for_each_position.end())
-                    {
-                        v_slot_for_each_position.push_back(std::make_pair(full_position_name, slot.name));
-                    }
-                    else
-                    {
-                        slot_it->second = slot.name;
-                    }
+                    v_slot_for_each_position.push_back(std::make_pair(full_position_name, slot.name));
                 }
-                catch (const std::exception& e)
+                else
                 {
-                    errlogPrintf("Error when creating lookup file:\n");
-                    std::cout << e.what() << " End of error\n";
+                    slot_it->second = slot.name;
                 }
 
+                // print logs
                 if (m_dims == 1) {
                     fprintf(fpOut, "%s %f\n", full_position_name.c_str(), it2->second.x + slot.x + slot.xoff);
                 }
