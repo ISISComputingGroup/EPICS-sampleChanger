@@ -9,32 +9,56 @@
 #include "tinyxml.h"
 #include <vector>
 
-struct samplePosn
-{
-    std::string name;
-    double x;
-    double y;
-};
-
-struct slotData
-{
-    std::string name;
-    std::string sampleSuffix;
-    double x;
-    double y;
-    std::string rackType;
-    double xoff;
-    double yoff;
-};
-
 class converter
 {
 public:
+    struct Position
+    {
+        std::string name;
+        double x;
+        double y;
+    };
+
+    struct Slot
+    {
+        std::string name;
+        std::string sampleSuffix;
+        double x;
+        double y;
+        std::string rackType;
+        double xoff;
+        double yoff;
+    };
+
+    struct Rack
+    {
+        std::string name;
+        std::vector<Position> positions;
+
+        Rack(std::string name, std::vector<Position> positions)
+        {
+            this->name = name;
+            this->positions = positions;
+        }
+    };
+
+    struct SlotPositions
+    {
+        std::string slotName;
+        std::list<std::string> positions;
+
+        SlotPositions(std::string slot, std::list<std::string> positions)
+        {
+            this->slotName = slot;
+            this->positions = positions;
+        }
+    };
+
     converter(int i);
-    converter(int i, std::vector<std::pair<std::string, std::vector<std::pair<std::string, samplePosn>>>> racks, std::vector<std::pair<std::string, slotData>> slots);
+    converter(int i, std::vector<Rack> racks, std::vector<Slot> slots);
     virtual ~converter() {};
     int createLookup();
-    std::vector<std::pair<std::string, slotData>> loadSlotDetails(TiXmlHandle& hRoot);
+    std::vector<Slot> loadSlotDetails(TiXmlHandle& hRoot);
 
     std::string get_available_slots();
     std::string get_available_in_slot(std::string slot);
@@ -44,26 +68,16 @@ public:
     void loadRackDefs(TiXmlHandle& hRoot);
     void loadSlotDefs(TiXmlHandle& hRoot);
 
-    // this is effectively a map of string to slotData but preserving order
-    std::vector<std::pair<std::string, slotData>> v_slots;
-
-    // this is mapping a string to a vector of pairs
-    // example: "A" -> [("B", 0), ("C", 1)]
-    std::vector<std::pair<std::string, std::vector<std::pair<std::string, samplePosn>>>> v_racks;
+    std::vector<Slot> v_slots;
+    std::vector<Rack> v_racks;
 
 private:
-    // vectors of pairs are used here rather than maps to preserve insertion order
 
-    // slot : list(positions)
-    // this is effectively mapping of slot (string) to a list of positions (strings)
-    std::vector<std::pair<std::string, std::list<std::string>>> v_positions_for_each_slot;
+    std::vector<SlotPositions> v_positions_for_each_slot;
+    std::vector<SlotPositions>::iterator find_in_positions(std::string slot);
 
-    std::vector<std::pair<std::string, std::list<std::string>>>::iterator find_in_positions(std::string slot);
-
-    // position : slot
-    // this is effectively a map of string to string but preserving order
+    // this is effectively just a mapping of string to string, preserving insertion order
     std::vector<std::pair<std::string, std::string>> v_slot_for_each_position;
-
     std::vector<std::pair<std::string, std::string>>::iterator find_in_slots(std::string name);
 
     int m_dims;
