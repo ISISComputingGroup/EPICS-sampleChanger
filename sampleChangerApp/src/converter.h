@@ -4,6 +4,7 @@
 #include <map>
 #include <list>
 #include <string>
+#include <algorithm>
 
 #define TIXML_USE_STL 
 #include "tinyxml.h"
