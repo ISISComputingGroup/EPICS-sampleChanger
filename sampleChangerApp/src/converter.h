@@ -36,7 +36,7 @@ public:
         std::string name;
         std::vector<Position> positions;
 
-        Rack(std::string name, std::vector<Position> positions)
+        Rack(const std::string& name, const std::vector<Position>& positions)
         {
             this->name = name;
             this->positions = positions;
@@ -48,7 +48,7 @@ public:
         std::string slotName;
         std::list<std::string> positions;
 
-        SlotPositions(std::string slot, std::list<std::string> positions)
+        SlotPositions(const std::string& slot, const std::list<std::string>& positions)
         {
             this->slotName = slot;
             this->positions = positions;
@@ -56,15 +56,15 @@ public:
     };
 
     converter(int i);
-    converter(int i, std::vector<Rack> racks, std::vector<Slot> slots);
+    converter(int i, const std::vector<Rack>& racks, const std::vector<Slot>& slots);
     virtual ~converter() {};
     int createLookup();
     std::vector<Slot> loadSlotDetails(TiXmlHandle& hRoot);
 
-    std::string get_available_slots();
+    std::string get_available_slots() const;
     std::string get_available_in_slot(std::string slot);
-    bool checkSlotExists(std::string slotName);
-    std::string get_slot_for_position(std::string slot);
+    bool checkSlotExists(const std::string& slotName) const;
+    std::string get_slot_for_position(const std::string& slot) const;
 
     void loadRackDefs(TiXmlHandle& hRoot);
     void loadSlotDefs(TiXmlHandle& hRoot);
@@ -75,11 +75,13 @@ public:
 private:
 
     std::vector<SlotPositions> v_positions_for_each_slot;
-    std::vector<SlotPositions>::iterator find_in_positions(std::string slot);
+    std::vector<SlotPositions>::iterator find_in_positions(const std::string& slot);
+    std::vector<SlotPositions>::const_iterator find_in_positions(const std::string& slot) const;
 
     // this is effectively just a mapping of string to string, preserving insertion order
     std::vector<std::pair<std::string, std::string>> v_slot_for_each_position;
-    std::vector<std::pair<std::string, std::string>>::iterator find_in_slots(std::string name);
+    std::vector<std::pair<std::string, std::string>>::iterator find_in_slots(const std::string& name);
+    std::vector<std::pair<std::string, std::string>>::const_iterator find_in_slots(const std::string& name) const;
 
     int m_dims;
 

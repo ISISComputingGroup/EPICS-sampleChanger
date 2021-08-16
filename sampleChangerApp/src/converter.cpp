@@ -12,14 +12,14 @@ converter::converter(int i = 2)
 }
 
 // alternative constructor, only for testing
-converter::converter(int i, std::vector<Rack> racks, std::vector<Slot> slots)
+converter::converter(int i, const std::vector<Rack>& racks, const std::vector<Slot>& slots)
 {
     m_dims = i;
     v_racks = racks;
     v_slots = slots;
 }
 
-std::vector<converter::SlotPositions>::iterator converter::find_in_positions(std::string slot)
+std::vector<converter::SlotPositions>::iterator converter::find_in_positions(const std::string& slot)
 {
     std::vector<SlotPositions>::iterator it =
         std::find_if(v_positions_for_each_slot.begin(), v_positions_for_each_slot.end(),
@@ -27,10 +27,28 @@ std::vector<converter::SlotPositions>::iterator converter::find_in_positions(std
     return it;
 }
 
-std::vector<std::pair<std::string, std::string>>::iterator converter::find_in_slots(std::string name)
+// const version of above
+std::vector<converter::SlotPositions>::const_iterator converter::find_in_positions(const std::string& slot) const
+{
+    std::vector<SlotPositions>::const_iterator it =
+        std::find_if(v_positions_for_each_slot.cbegin(), v_positions_for_each_slot.cend(),
+            [&](SlotPositions slpos) {return slpos.slotName == slot; });
+    return it;
+}
+
+std::vector<std::pair<std::string, std::string>>::iterator converter::find_in_slots(const std::string& name)
 {
     std::vector<std::pair<std::string, std::string>>::iterator slot_it =
         std::find_if(v_slot_for_each_position.begin(), v_slot_for_each_position.end(),
+            [&](std::pair<std::string, std::string> pair) {return pair.first == name; });
+    return slot_it;
+}
+
+// const version of above
+std::vector<std::pair<std::string, std::string>>::const_iterator converter::find_in_slots(const std::string& name) const
+{
+    std::vector<std::pair<std::string, std::string>>::const_iterator slot_it =
+        std::find_if(v_slot_for_each_position.cbegin(), v_slot_for_each_position.cend(),
             [&](std::pair<std::string, std::string> pair) {return pair.first == name; });
     return slot_it;
 }
@@ -207,10 +225,10 @@ int converter::createLookup()
     return success;
 }
 
-bool converter::checkSlotExists(std::string slotName) {
+bool converter::checkSlotExists(const std::string& slotName) const {
     try {
-        std::vector<SlotPositions>::iterator it = find_in_positions(slotName);
-        if (it == v_positions_for_each_slot.end())
+        std::vector<SlotPositions>::const_iterator it = find_in_positions(slotName);
+        if (it == v_positions_for_each_slot.cend())
         {
             throw std::out_of_range("slot doesnt exist");
         }
@@ -221,10 +239,10 @@ bool converter::checkSlotExists(std::string slotName) {
     }
 }
 
-std::string converter::get_available_slots()
+std::string converter::get_available_slots() const
 {
     std::string res;
-    for (std::vector<Slot>::iterator it = v_slots.begin(); it != v_slots.end(); it++) {
+    for (std::vector<Slot>::const_iterator it = v_slots.cbegin(); it != v_slots.cend(); it++) {
         res += it->name;
         res += " ";
     }
@@ -238,8 +256,8 @@ std::string converter::get_available_in_slot(std::string slot)
     std::string res;
     std::list<std::string> positions;
     try {
-        std::vector<SlotPositions>::iterator it = find_in_positions(slot);
-        if (it == v_positions_for_each_slot.end())
+        std::vector<SlotPositions>::const_iterator it = find_in_positions(slot);
+        if (it == v_positions_for_each_slot.cend())
         {
             throw std::out_of_range("not available in slot");
         }
@@ -249,16 +267,16 @@ std::string converter::get_available_in_slot(std::string slot)
         errlogPrintf("Slot '%s' unknown, returning all positions\n", slot.c_str());
         slot = ALL_POSITIONS_NAME;
     }
-    for (std::list<std::string>::iterator it = positions.begin(); it != positions.end(); it++) {
+    for (std::list<std::string>::const_iterator it = positions.cbegin(); it != positions.cend(); it++) {
         res += *it + " ";
     }
     res += "END";
     return res;
 }
 
-std::string converter::get_slot_for_position(std::string position)
+std::string converter::get_slot_for_position(const std::string& position) const
 {
-    if (find_in_slots(position) == v_slot_for_each_position.end())
+    if (find_in_slots(position) == v_slot_for_each_position.cend())
     {
         throw std::out_of_range("\nSlot not found at given position");
     }
@@ -277,27 +295,27 @@ int converter::createLookup(FILE* fpOut)
     fprintf(fpOut, "# WARNING: Generated file - Do not edit\n");
     fprintf(fpOut, "# Instead edit samplechanger.xml and press recalc\n");
 
-    for (std::vector<Slot>::iterator it = v_slots.begin(); it != v_slots.end(); it++) {
+    for (std::vector<Slot>::const_iterator it = v_slots.cbegin(); it != v_slots.cend(); it++) {
 
-        Slot& slot = *it;
-        std::vector<Rack>::iterator iter = std::find_if(v_racks.begin(), v_racks.end(),
+        const Slot& slot = *it;
+        std::vector<Rack>::const_iterator iter = std::find_if(v_racks.cbegin(), v_racks.cend(),
             [&](Rack r) {return r.name == slot.rackType; });
-        if (iter == v_racks.end()) {
+        if (iter == v_racks.cend()) {
             errlogPrintf("sampleChanger: Unknown rack type '%s' of slot %s\n", slot.rackType.c_str(), slot.name.c_str());
             return 1;
         }
         else {
-            for (std::vector<Position>::iterator it2 = iter->positions.begin(); it2 != iter->positions.end(); it2++) {
+            for (std::vector<Position>::const_iterator it2 = iter->positions.cbegin(); it2 != iter->positions.cend(); it2++) {
                 std::string full_position_name = it2->name + slot.sampleSuffix;
 
-                std::vector<SlotPositions>::iterator pos_it = find_in_positions(ALL_POSITIONS_NAME);
-                if (pos_it == v_positions_for_each_slot.end())
+                std::vector<SlotPositions>::const_iterator pos_it = find_in_positions(ALL_POSITIONS_NAME);
+                if (pos_it == v_positions_for_each_slot.cend())
                 {
                     v_positions_for_each_slot.push_back(SlotPositions(ALL_POSITIONS_NAME, std::list<std::string>()));
                 }
                 find_in_positions(ALL_POSITIONS_NAME)->positions.push_back(full_position_name);
 
-                std::vector<SlotPositions>::iterator pos_it2 = find_in_positions(slot.name);
+                std::vector<SlotPositions>::const_iterator pos_it2 = find_in_positions(slot.name);
                 if (pos_it2 == v_positions_for_each_slot.end())
                 {
                     v_positions_for_each_slot.push_back(SlotPositions(slot.name, std::list<std::string>()));
