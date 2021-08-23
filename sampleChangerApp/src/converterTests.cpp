@@ -48,7 +48,7 @@ namespace {
 
         converter* conv = new converter(2, racks, slots);
         conv->loadSlotDetails(hRoot);
-        std::string suffix = std::find_if(conv->v_slots.begin(), conv->v_slots.end(), [&](converter::Slot slt) {return slt.name == "T"; })->sampleSuffix;
+        std::string suffix = std::find_if(conv->slots.cbegin(), conv->slots.cend(), [&](converter::Slot slt) {return slt.name == "T"; })->sampleSuffix;
         ASSERT_EQ(suffix, "T");
     }
 
@@ -103,14 +103,13 @@ namespace {
         conv.loadSlotDefs(hRoot);
         conv.loadSlotDetails(hRoot2);
 
-        // If order is preserved in v_racks and v_slots it will be correctly outputted to lookup file as it simply loops over them
+        // If order is preserved in m_racks and m_slots it will be correctly outputted to lookup file as it simply loops over them
         
-        ASSERT_EQ(conv.v_racks[0].name, "NarrowX10");
-        ASSERT_EQ(conv.v_racks[1].name, "Banjo");
-        ASSERT_EQ(conv.v_slots[0].name, "T");
-        ASSERT_EQ(conv.v_slots[1].name, "B");
-        ASSERT_EQ(conv.v_slots[2].name, "F");
-        
+        ASSERT_EQ(conv.racks[0].name, "NarrowX10");
+        ASSERT_EQ(conv.racks[1].name, "Banjo");
+        ASSERT_EQ(conv.slots[0].name, "T");
+        ASSERT_EQ(conv.slots[1].name, "B");
+        ASSERT_EQ(conv.slots[2].name, "F");
     }
 
 }

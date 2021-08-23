@@ -69,17 +69,19 @@ public:
     void loadRackDefs(TiXmlHandle& hRoot);
     void loadSlotDefs(TiXmlHandle& hRoot);
 
-    std::vector<Slot> v_slots;
-    std::vector<Rack> v_racks;
+    const std::vector<Slot>& slots() const { return m_slots; }
+    const std::vector<Rack>& racks() const { return m_racks; }
 
 private:
 
-    std::vector<SlotPositions> v_positions_for_each_slot;
+    std::vector<Slot> m_slots;
+    std::vector<Rack> m_racks;
+    std::vector<SlotPositions> m_positions_for_each_slot;
     std::vector<SlotPositions>::iterator find_in_positions(const std::string& slot);
     std::vector<SlotPositions>::const_iterator find_in_positions(const std::string& slot) const;
 
     // this is effectively just a mapping of string to string, preserving insertion order
-    std::vector<std::pair<std::string, std::string>> v_slot_for_each_position;
+    std::vector<std::pair<std::string, std::string>> m_slot_for_each_position;
     std::vector<std::pair<std::string, std::string>>::iterator find_in_slots(const std::string& name);
     std::vector<std::pair<std::string, std::string>>::const_iterator find_in_slots(const std::string& name) const;
 
