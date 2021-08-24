@@ -5,24 +5,58 @@
 
 #define ALL_POSITIONS_NAME "_ALL"
 
-converter::converter(int i=2)
+converter::converter(int i = 2)
 {
     m_dims = i;
     loadDefRackDefs("RACKDEFS");
-} 
+}
 
 // alternative constructor, only for testing
-converter::converter(int i, std::map<std::string, std::map<std::string, samplePosn> > racks, std::map<std::string, slotData> slots)
+converter::converter(int i, const std::vector<Rack>& racks, const std::vector<Slot>& slots)
 {
     m_dims = i;
     m_racks = racks;
     m_slots = slots;
-} 
+}
 
-void converter::loadDefRackDefs(const char* env_fname) 
+std::vector<converter::SlotPositions>::iterator converter::find_in_positions(const std::string& slot)
 {
-    const char *fname = getenv(env_fname);
-    if ( fname==NULL ) {
+    std::vector<SlotPositions>::iterator it =
+        std::find_if(m_positions_for_each_slot.begin(), m_positions_for_each_slot.end(),
+            [&](SlotPositions slpos) {return slpos.slotName == slot; });
+    return it;
+}
+
+// const version of above
+std::vector<converter::SlotPositions>::const_iterator converter::find_in_positions(const std::string& slot) const
+{
+    std::vector<SlotPositions>::const_iterator it =
+        std::find_if(m_positions_for_each_slot.cbegin(), m_positions_for_each_slot.cend(),
+            [&](SlotPositions slpos) {return slpos.slotName == slot; });
+    return it;
+}
+
+std::vector<std::pair<std::string, std::string>>::iterator converter::find_in_slots(const std::string& name)
+{
+    std::vector<std::pair<std::string, std::string>>::iterator slot_it =
+        std::find_if(m_slot_for_each_position.begin(), m_slot_for_each_position.end(),
+            [&](std::pair<std::string, std::string> pair) {return pair.first == name; });
+    return slot_it;
+}
+
+// const version of above
+std::vector<std::pair<std::string, std::string>>::const_iterator converter::find_in_slots(const std::string& name) const
+{
+    std::vector<std::pair<std::string, std::string>>::const_iterator slot_it =
+        std::find_if(m_slot_for_each_position.cbegin(), m_slot_for_each_position.cend(),
+            [&](std::pair<std::string, std::string> pair) {return pair.first == name; });
+    return slot_it;
+}
+
+void converter::loadDefRackDefs(const char* env_fname)
+{
+    const char* fname = getenv(env_fname);
+    if (fname == NULL) {
         errlogPrintf("sampleChanger: Environment variable \"%s\" not set\n", env_fname);
         return;
     }
@@ -30,7 +64,7 @@ void converter::loadDefRackDefs(const char* env_fname)
 }
 
 // Read rack_definitions.xml
-void converter::loadRackDefs(const char* fname) 
+void converter::loadRackDefs(const char* fname)
 {
     TiXmlDocument doc(fname);
     if (!doc.LoadFile()) {
@@ -42,76 +76,75 @@ void converter::loadRackDefs(const char* fname)
     TiXmlElement* pElem;
     TiXmlHandle hRoot(0);
 
-    pElem=hDoc.FirstChildElement().Element();
+    pElem = hDoc.FirstChildElement().Element();
     if (!pElem) {
         errlogPrintf("sampleChanger: Unable to parse rack defs file \"%s\"\n", fname);
         return;
     }
 
     // save this for later
-    hRoot=TiXmlHandle(pElem);
+    hRoot = TiXmlHandle(pElem);
 
     loadRackDefs(hRoot);
     loadSlotDefs(hRoot);
 }
 
 // Extract the definitions of the rack types from the xml
-void converter::loadRackDefs(TiXmlHandle &hRoot)
+void converter::loadRackDefs(TiXmlHandle& hRoot)
 {
     m_racks.clear();
-    
-    for( TiXmlElement* pElem=hRoot.FirstChild("racks").FirstChild("rack").Element(); pElem; pElem=pElem->NextSiblingElement())
+
+    for (TiXmlElement* pElem = hRoot.FirstChild("racks").FirstChild("rack").Element(); pElem; pElem = pElem->NextSiblingElement())
     {
-        std::map<std::string, samplePosn> posns;
+        std::vector<Position> posns;
         std::string rackName = pElem->Attribute("name");
-        for ( TiXmlElement *pRack = pElem->FirstChildElement("position") ; pRack ; pRack=pRack->NextSiblingElement() ) {
-            samplePosn posn;
-            const char *attrib = pRack->Attribute("name");
-            if ( attrib!=NULL ) {
+        for (TiXmlElement* pRack = pElem->FirstChildElement("position"); pRack; pRack = pRack->NextSiblingElement()) {
+            Position posn;
+            const char* attrib = pRack->Attribute("name");
+            if (attrib != NULL) {
                 posn.name = attrib;
             }
             else {
                 errlogPrintf("sampleChanger: rack has no name attribute \"%s\"\n", rackName.c_str());
             }
 
-            if ( pRack->QueryDoubleAttribute("x", &posn.x)!=TIXML_SUCCESS ) {
+            if (pRack->QueryDoubleAttribute("x", &posn.x) != TIXML_SUCCESS) {
                 errlogPrintf("sampleChanger: unable to read x attribute \"%s\" \"%s\"\n", rackName.c_str(), posn.name.c_str());
             }
-            if ( m_dims>1 && pRack->QueryDoubleAttribute("y", &posn.y)!=TIXML_SUCCESS ) {
+            if (m_dims > 1 && pRack->QueryDoubleAttribute("y", &posn.y) != TIXML_SUCCESS) {
                 errlogPrintf("sampleChanger: unable to read y attribute \"%s\" \"%s\"\n", rackName.c_str(), posn.name.c_str());
             }
-            posns[posn.name] = posn;
+            posns.push_back(posn);
         }
-        m_racks[rackName] = posns;
+        m_racks.push_back(Rack(rackName, posns));
     }
 }
 
 // Extract the definitions of the slots from the xml
-void converter::loadSlotDefs(TiXmlHandle &hRoot)
+void converter::loadSlotDefs(TiXmlHandle& hRoot)
 {
-    //printf("Loading slot defs\n");
     m_slots.clear();
-    
-    for( TiXmlElement* pElem=hRoot.FirstChild("slots").FirstChild("slot").Element(); pElem; pElem=pElem->NextSiblingElement())
+
+    for (TiXmlElement* pElem = hRoot.FirstChild("slots").FirstChild("slot").Element(); pElem; pElem = pElem->NextSiblingElement())
     {
-        
-        slotData slot;
+
+        Slot slot;
         std::string slotName = pElem->Attribute("name");
         slot.name = slotName;
-        
-        if ( pElem->QueryDoubleAttribute("x", &slot.x)!=TIXML_SUCCESS ) {
+
+        if (pElem->QueryDoubleAttribute("x", &slot.x) != TIXML_SUCCESS) {
             errlogPrintf("sampleChanger: unable to read slot x attribute \"%s\"\n", slotName.c_str());
         }
-        if ( m_dims>1 && pElem->QueryDoubleAttribute("y", &slot.y)!=TIXML_SUCCESS ) {
+        if (m_dims > 1 && pElem->QueryDoubleAttribute("y", &slot.y) != TIXML_SUCCESS) {
             errlogPrintf("sampleChanger: unable to read slot y attribute \"%s\"\n", slotName.c_str());
         }
-        
-        m_slots[slotName] = slot;
+
+        m_slots.push_back(slot);
     }
 }
 
 // Load the slot details - ie the current setup in samplechanger.xml
-void converter::loadSlotDetails(const char* fname) 
+void converter::loadSlotDetails(const char* fname)
 {
     TiXmlDocument doc(fname);
     if (!doc.LoadFile()) {
@@ -123,40 +156,40 @@ void converter::loadSlotDetails(const char* fname)
     TiXmlElement* pElem;
     TiXmlHandle hRoot(0);
 
-    pElem=hDoc.FirstChildElement().Element();
+    pElem = hDoc.FirstChildElement().Element();
     if (!pElem) {
         errlogPrintf("sampleChanger: Unable to parse slot details file \"%s\"\n", fname);
         return;
     }
 
     // save this for later
-    hRoot=TiXmlHandle(pElem);
+    hRoot = TiXmlHandle(pElem);
 
     loadSlotDetails(hRoot);
 }
 
 // Extract slot details from the xml
-std::map<std::string, slotData> converter::loadSlotDetails(TiXmlHandle &hRoot)
+std::vector<converter::Slot> converter::loadSlotDetails(TiXmlHandle& hRoot)
 {
-    for( TiXmlElement* pElem=hRoot.FirstChild("slot").Element(); pElem; pElem=pElem->NextSiblingElement())
+    for (TiXmlElement* pElem = hRoot.FirstChild("slot").Element(); pElem; pElem = pElem->NextSiblingElement())
     {
         std::string slotName = pElem->Attribute("name");
-        
-        std::map<std::string, slotData>::iterator iter = m_slots.find(slotName);
-        if ( iter==m_slots.end() ) {
+
+        std::vector<Slot>::iterator iter = std::find_if(m_slots.begin(), m_slots.end(), [&](Slot slt) { return slt.name == slotName; });
+        if (iter == m_slots.end()) {
             errlogPrintf("sampleChanger: Unknown slot '%s' in slot details\n", slotName.c_str());
         }
         else {
-            iter->second.rackType = pElem->Attribute("rack_type");
+            iter->rackType = pElem->Attribute("rack_type");
 
-            if (pElem->QueryStringAttribute("sample_suffix", &(iter->second.sampleSuffix)) == TIXML_NO_ATTRIBUTE){
-                iter->second.sampleSuffix = slotName;
+            if (pElem->QueryStringAttribute("sample_suffix", &(iter->sampleSuffix)) == TIXML_NO_ATTRIBUTE) {
+                iter->sampleSuffix = slotName;
             }
 
-            if ( pElem->QueryDoubleAttribute("xoff", &(iter->second.xoff))!=TIXML_SUCCESS ) {
+            if (pElem->QueryDoubleAttribute("xoff", &(iter->xoff)) != TIXML_SUCCESS) {
                 errlogPrintf("sampleChanger: unable to read slot xoff attribute \"%s\"\n", slotName.c_str());
             }
-            if ( m_dims>1 && pElem->QueryDoubleAttribute("yoff", &(iter->second.yoff))!=TIXML_SUCCESS ) {
+            if (m_dims > 1 && pElem->QueryDoubleAttribute("yoff", &(iter->yoff)) != TIXML_SUCCESS) {
                 errlogPrintf("sampleChanger: unable to read slot yoff attribute \"%s\"\n", slotName.c_str());
             }
         }
@@ -165,48 +198,52 @@ std::map<std::string, slotData> converter::loadSlotDetails(TiXmlHandle &hRoot)
 }
 
 // Create the lookup file
-int converter::createLookup() 
+int converter::createLookup()
 {
-    const char *fnameIn = getenv("SLOT_DETAILS_FILE");
-    if ( fnameIn==NULL ) {
+    const char* fnameIn = getenv("SLOT_DETAILS_FILE");
+    if (fnameIn == NULL) {
         errlogPrintf("Environment variable SLOT_DETAILS_FILE not set\n");
         return 1;
     }
     loadSlotDetails(fnameIn);
 
-    const char *fnameOut = getenv("SAMPLE_LKUP_FILE");
-    if ( fnameOut==NULL ) {
+    const char* fnameOut = getenv("SAMPLE_LKUP_FILE");
+    if (fnameOut == NULL) {
         errlogPrintf("Environment variable SAMPLE_LKUP_FILE not set\n");
         return 1;
     }
-    FILE *fpOut = fopen(fnameOut, "w");
-    if ( fpOut==NULL ) {
+    FILE* fpOut = fopen(fnameOut, "w");
+    if (fpOut == NULL) {
         errlogPrintf("Unable to open %s\n", fnameOut);
         return 1;
     }
-    
+
     int success = createLookup(fpOut);
-    
+
     fclose(fpOut);
-    
+
     return success;
 }
 
-bool converter::checkSlotExists(std::string slotName) {
+bool converter::checkSlotExists(const std::string& slotName) const {
     try {
-        m_positions_for_each_slot.at(slotName);
+        std::vector<SlotPositions>::const_iterator it = find_in_positions(slotName);
+        if (it == m_positions_for_each_slot.cend())
+        {
+            throw std::out_of_range("slot doesnt exist");
+        }
         return true;
     }
-    catch (const std::out_of_range &e) {
+    catch (const std::out_of_range& e) {
         return false;
     }
 }
 
-std::string converter::get_available_slots() 
+std::string converter::get_available_slots() const
 {
     std::string res;
-    for ( std::map<std::string, slotData>::iterator it=m_slots.begin() ; it!=m_slots.end() ; it++ ) {
-        res += it->first;
+    for (std::vector<Slot>::const_iterator it = m_slots.cbegin(); it != m_slots.cend(); it++) {
+        res += it->name;
         res += " ";
     }
     res += ALL_POSITIONS_NAME;
@@ -219,24 +256,34 @@ std::string converter::get_available_in_slot(std::string slot)
     std::string res;
     std::list<std::string> positions;
     try {
-        positions = m_positions_for_each_slot.at(slot);
-    } catch (const std::out_of_range &e) {
-        errlogPrintf("Slot '%s' unknown, returning all positions\n", slot.c_str());
-        slot = ALL_POSITIONS_NAME;
+        std::vector<SlotPositions>::const_iterator it = find_in_positions(slot);
+        if (it == m_positions_for_each_slot.cend())
+        {
+            throw std::out_of_range("not available in slot");
+        }
+        positions = it->positions;
     }
-    for (std::list<std::string>::iterator it = positions.begin(); it != positions.end(); it++) {
+    catch (const std::out_of_range& e) {
+        errlogPrintf("Slot '%s' unknown\n", slot.c_str());
+    }
+    for (std::list<std::string>::const_iterator it = positions.cbegin(); it != positions.cend(); it++) {
         res += *it + " ";
     }
     res += "END";
     return res;
 }
 
-std::string converter::get_slot_for_position(std::string position) {
-    return m_slot_for_each_position.at(position);
+std::string converter::get_slot_for_position(const std::string& position) const
+{
+    if (find_in_slots(position) == m_slot_for_each_position.cend())
+    {
+        throw std::out_of_range("\nSlot not found at given position");
+    }
+    return find_in_slots(position)->second;
 }
 
 // Write to the lookup file
-int converter::createLookup(FILE *fpOut) 
+int converter::createLookup(FILE* fpOut)
 {
     errlogPrintf("sampleChanger: writing motionsetpoints lookup file\n");
     int motionsetpoint_defs_written = 0;
@@ -247,36 +294,60 @@ int converter::createLookup(FILE *fpOut)
     fprintf(fpOut, "# WARNING: Generated file - Do not edit\n");
     fprintf(fpOut, "# Instead edit samplechanger.xml and press recalc\n");
 
-    for ( std::map<std::string, slotData>::iterator it=m_slots.begin() ; it!=m_slots.end() ; it++ ) {
-        
-        slotData &slot = it->second;
-        std::map<std::string, std::map<std::string, samplePosn> >::iterator iter = m_racks.find(slot.rackType);
-        if ( iter==m_racks.end() ) {
+    for (std::vector<Slot>::const_iterator it = m_slots.cbegin(); it != m_slots.cend(); it++) {
+
+        const Slot& slot = *it;
+        std::vector<Rack>::const_iterator iter = std::find_if(m_racks.cbegin(), m_racks.cend(),
+            [&](Rack r) {return r.name == slot.rackType; });
+        if (iter == m_racks.cend()) {
             errlogPrintf("sampleChanger: Unknown rack type '%s' of slot %s\n", slot.rackType.c_str(), slot.name.c_str());
             return 1;
         }
         else {
-            for ( std::map<std::string, samplePosn>::iterator it2 = iter->second.begin() ; it2!=iter->second.end() ; it2++ ) {
-                std::string full_position_name = it2->second.name + slot.sampleSuffix;
-                m_positions_for_each_slot[ALL_POSITIONS_NAME].push_back(full_position_name);
-                m_positions_for_each_slot[slot.name].push_back(full_position_name);
-                m_slot_for_each_position[full_position_name] = slot.name;
+            for (std::vector<Position>::const_iterator it2 = iter->positions.cbegin(); it2 != iter->positions.cend(); it2++) {
+                std::string full_position_name = it2->name + slot.sampleSuffix;
 
-                if ( m_dims==1 ) {
-                    fprintf(fpOut, "%s %f\n", full_position_name.c_str(), it2->second.x+slot.x+slot.xoff);                    
+                std::vector<SlotPositions>::const_iterator pos_it = find_in_positions(ALL_POSITIONS_NAME);
+                if (pos_it == m_positions_for_each_slot.cend())
+                {
+                    m_positions_for_each_slot.push_back(SlotPositions(ALL_POSITIONS_NAME, std::list<std::string>()));
+                }
+                find_in_positions(ALL_POSITIONS_NAME)->positions.push_back(full_position_name);
+
+                std::vector<SlotPositions>::const_iterator pos_it2 = find_in_positions(slot.name);
+                if (pos_it2 == m_positions_for_each_slot.end())
+                {
+                    m_positions_for_each_slot.push_back(SlotPositions(slot.name, std::list<std::string>()));
+                }
+                find_in_positions(slot.name)->positions.push_back(full_position_name);
+
+                std::vector<std::pair<std::string, std::string>>::iterator slot_it = find_in_slots(full_position_name);
+                if (slot_it == m_slot_for_each_position.end())
+                {
+                    m_slot_for_each_position.push_back(std::make_pair(full_position_name, slot.name));
+                }
+                else
+                {
+                    slot_it->second = slot.name;
+                }
+
+                // print logs
+                if (m_dims == 1) {
+                    fprintf(fpOut, "%s %f\n", full_position_name.c_str(), it2->x + slot.x + slot.xoff);
                 }
                 else {
-                    fprintf(fpOut, "%s %f %f\n", full_position_name.c_str(), it2->second.x+slot.x+slot.xoff, it2->second.y+slot.y+slot.yoff);
+                    fprintf(fpOut, "%s %f %f\n", full_position_name.c_str(), it2->x + slot.x + slot.xoff, it2->y + slot.y + slot.yoff);
                 }
             }
         }
         motionsetpoint_defs_written = 1;
     }
-    
+
+
     if (!motionsetpoint_defs_written) {
         errlogPrintf("sampleChanger: no data written\n");
         return 1;
     }
-    
+
     return 0;
 }
