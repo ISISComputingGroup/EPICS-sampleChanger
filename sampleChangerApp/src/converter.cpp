@@ -264,8 +264,7 @@ std::string converter::get_available_in_slot(std::string slot)
         positions = it->positions;
     }
     catch (const std::out_of_range& e) {
-        errlogPrintf("Slot '%s' unknown, returning all positions\n", slot.c_str());
-        slot = ALL_POSITIONS_NAME;
+        errlogPrintf("Slot '%s' unknown\n", slot.c_str());
     }
     for (std::list<std::string>::const_iterator it = positions.cbegin(); it != positions.cend(); it++) {
         res += *it + " ";
