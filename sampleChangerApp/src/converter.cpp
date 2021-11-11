@@ -68,7 +68,7 @@ void converter::loadRackDefs(const char* fname)
 {
     TiXmlDocument doc(fname);
     if (!doc.LoadFile()) {
-        errlogPrintf("sampleChanger: Unable to open rack defs file \"%s\"\n", fname);
+        errlogPrintf("sampleChanger: Unable to open rack defs file \"%s\": %s\n", fname, doc.ErrorDesc());
         return;
     }
 
