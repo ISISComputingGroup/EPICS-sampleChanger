@@ -19,6 +19,16 @@ converter::converter(int i, const std::vector<Rack>& racks, const std::vector<Sl
     m_slots = slots;
 }
 
+void converter::printError(const char* format, ...) {
+    char buff[100];
+    va_list argptr;
+    va_start(argptr, format);
+    vsnprintf(buff, sizeof(buff), format, argptr);
+    va_end(argptr);
+    errlogPrintf(buff);
+    m_errors.push_back(buff);
+}
+
 std::vector<converter::SlotPositions>::iterator converter::find_in_positions(const std::string& slot)
 {
     std::vector<SlotPositions>::iterator it =
@@ -68,7 +78,7 @@ void converter::loadRackDefs(const char* fname)
 {
     TiXmlDocument doc(fname);
     if (!doc.LoadFile()) {
-        errlogPrintf("sampleChanger: Unable to open rack defs file \"%s\": %s\n", fname, doc.ErrorDesc());
+        printError("sampleChanger: Unable to open rack defs file \"%s\": %s\n", fname, doc.ErrorDesc());
         return;
     }
 
@@ -78,7 +88,7 @@ void converter::loadRackDefs(const char* fname)
 
     pElem = hDoc.FirstChildElement().Element();
     if (!pElem) {
-        errlogPrintf("sampleChanger: Unable to parse rack defs file \"%s\"\n", fname);
+        printError("sampleChanger: Unable to parse rack defs file \"%s\"\n", fname);
         return;
     }
 
@@ -105,14 +115,14 @@ void converter::loadRackDefs(TiXmlHandle& hRoot)
                 posn.name = attrib;
             }
             else {
-                errlogPrintf("sampleChanger: rack has no name attribute \"%s\"\n", rackName.c_str());
+                printError("sampleChanger: rack has no name attribute \"%s\"\n", rackName.c_str());
             }
 
             if (pRack->QueryDoubleAttribute("x", &posn.x) != TIXML_SUCCESS) {
-                errlogPrintf("sampleChanger: unable to read x attribute \"%s\" \"%s\"\n", rackName.c_str(), posn.name.c_str());
+                printError("sampleChanger: unable to read x attribute \"%s\" \"%s\"\n", rackName.c_str(), posn.name.c_str());
             }
             if (m_dims > 1 && pRack->QueryDoubleAttribute("y", &posn.y) != TIXML_SUCCESS) {
-                errlogPrintf("sampleChanger: unable to read y attribute \"%s\" \"%s\"\n", rackName.c_str(), posn.name.c_str());
+                printError("sampleChanger: unable to read y attribute \"%s\" \"%s\"\n", rackName.c_str(), posn.name.c_str());
             }
             posns.push_back(posn);
         }
@@ -133,10 +143,10 @@ void converter::loadSlotDefs(TiXmlHandle& hRoot)
         slot.name = slotName;
 
         if (pElem->QueryDoubleAttribute("x", &slot.x) != TIXML_SUCCESS) {
-            errlogPrintf("sampleChanger: unable to read slot x attribute \"%s\"\n", slotName.c_str());
+            printError("sampleChanger: unable to read slot x attribute \"%s\"\n", slotName.c_str());
         }
         if (m_dims > 1 && pElem->QueryDoubleAttribute("y", &slot.y) != TIXML_SUCCESS) {
-            errlogPrintf("sampleChanger: unable to read slot y attribute \"%s\"\n", slotName.c_str());
+            printError("sampleChanger: unable to read slot y attribute \"%s\"\n", slotName.c_str());
         }
 
         m_slots.push_back(slot);
@@ -148,7 +158,7 @@ void converter::loadSlotDetails(const char* fname)
 {
     TiXmlDocument doc(fname);
     if (!doc.LoadFile()) {
-        errlogPrintf("sampleChanger: Unable to open slot details file \"%s\"\n", fname);
+        printError("sampleChanger: Unable to open slot details file \"%s\"\n", fname);
         return;
     }
 
@@ -158,7 +168,7 @@ void converter::loadSlotDetails(const char* fname)
 
     pElem = hDoc.FirstChildElement().Element();
     if (!pElem) {
-        errlogPrintf("sampleChanger: Unable to parse slot details file \"%s\"\n", fname);
+        printError("sampleChanger: Unable to parse slot details file \"%s\"\n", fname);
         return;
     }
 
@@ -177,7 +187,7 @@ std::vector<converter::Slot> converter::loadSlotDetails(TiXmlHandle& hRoot)
 
         std::vector<Slot>::iterator iter = std::find_if(m_slots.begin(), m_slots.end(), [&](Slot slt) { return slt.name == slotName; });
         if (iter == m_slots.end()) {
-            errlogPrintf("sampleChanger: Unknown slot '%s' in slot details\n", slotName.c_str());
+            printError("sampleChanger: Unknown slot '%s' in slot details\n", slotName.c_str());
         }
         else {
             iter->rackType = pElem->Attribute("rack_type");
@@ -187,10 +197,10 @@ std::vector<converter::Slot> converter::loadSlotDetails(TiXmlHandle& hRoot)
             }
 
             if (pElem->QueryDoubleAttribute("xoff", &(iter->xoff)) != TIXML_SUCCESS) {
-                errlogPrintf("sampleChanger: unable to read slot xoff attribute \"%s\"\n", slotName.c_str());
+                printError("sampleChanger: unable to read slot xoff attribute \"%s\"\n", slotName.c_str());
             }
             if (m_dims > 1 && pElem->QueryDoubleAttribute("yoff", &(iter->yoff)) != TIXML_SUCCESS) {
-                errlogPrintf("sampleChanger: unable to read slot yoff attribute \"%s\"\n", slotName.c_str());
+                printError("sampleChanger: unable to read slot yoff attribute \"%s\"\n", slotName.c_str());
             }
         }
     }
@@ -202,19 +212,19 @@ int converter::createLookup()
 {
     const char* fnameIn = getenv("SLOT_DETAILS_FILE");
     if (fnameIn == NULL) {
-        errlogPrintf("Environment variable SLOT_DETAILS_FILE not set\n");
+        printError("Environment variable SLOT_DETAILS_FILE not set\n");
         return 1;
     }
     loadSlotDetails(fnameIn);
 
     const char* fnameOut = getenv("SAMPLE_LKUP_FILE");
     if (fnameOut == NULL) {
-        errlogPrintf("Environment variable SAMPLE_LKUP_FILE not set\n");
+        printError("Environment variable SAMPLE_LKUP_FILE not set\n");
         return 1;
     }
     FILE* fpOut = fopen(fnameOut, "w");
     if (fpOut == NULL) {
-        errlogPrintf("Unable to open %s\n", fnameOut);
+        printError("Unable to open %s\n", fnameOut);
         return 1;
     }
 
@@ -264,7 +274,7 @@ std::string converter::get_available_in_slot(std::string slot)
         positions = it->positions;
     }
     catch (const std::out_of_range& e) {
-        errlogPrintf("Slot '%s' unknown\n", slot.c_str());
+        printError("Slot '%s' unknown\n", slot.c_str());
     }
     for (std::list<std::string>::const_iterator it = positions.cbegin(); it != positions.cend(); it++) {
         res += *it + " ";
@@ -300,7 +310,7 @@ int converter::createLookup(FILE* fpOut)
         std::vector<Rack>::const_iterator iter = std::find_if(m_racks.cbegin(), m_racks.cend(),
             [&](Rack r) {return r.name == slot.rackType; });
         if (iter == m_racks.cend()) {
-            errlogPrintf("sampleChanger: Unknown rack type '%s' of slot %s\n", slot.rackType.c_str(), slot.name.c_str());
+            printError("sampleChanger: Unknown rack type '%s' of slot %s\n", slot.rackType.c_str(), slot.name.c_str());
             return 1;
         }
         else {
@@ -345,7 +355,7 @@ int converter::createLookup(FILE* fpOut)
 
 
     if (!motionsetpoint_defs_written) {
-        errlogPrintf("sampleChanger: no data written\n");
+        printError("sampleChanger: no data written\n");
         return 1;
     }
 

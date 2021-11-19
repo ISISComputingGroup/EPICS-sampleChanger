@@ -5,6 +5,7 @@
 #include <list>
 #include <string>
 #include <algorithm>
+#include <numeric>
 
 #define TIXML_USE_STL 
 #include "tinyxml.h"
@@ -71,9 +72,10 @@ public:
 
     const std::vector<Slot>& slots() const { return m_slots; }
     const std::vector<Rack>& racks() const { return m_racks; }
+    const std::string errors() {return std::accumulate(m_errors.begin(), m_errors.end(), std::string(""));};
 
 private:
-
+    std::vector<std::string> m_errors;
     std::vector<Slot> m_slots;
     std::vector<Rack> m_racks;
     std::vector<SlotPositions> m_positions_for_each_slot;
@@ -91,6 +93,7 @@ private:
     void loadRackDefs(const char* fname);
     void loadSlotDetails(const char* fname);
     int createLookup(FILE* fpOut);
+    void printError(const char* format, ...);
 };
 
 #endif /* CONVERTER_H */

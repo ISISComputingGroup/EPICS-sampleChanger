@@ -72,3 +72,10 @@ record(waveform, "$(P)AVAILABLE_IN_SLOT") {
 	field(FLNK,"$(P)RECALC")
 }
 
+record(waveform, "$(P)ERRORS") {
+    field(SCAN, "I/O Intr")
+	field(DTYP,"asynOctetRead")
+	field(FTVL,"CHAR")
+	field(NELM,"8000")
+	field(INP,"@asyn($(LOOKUP),0,0)ERRORS")
+}

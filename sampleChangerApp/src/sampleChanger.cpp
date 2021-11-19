@@ -37,13 +37,14 @@ sampleChanger::sampleChanger(const char *portName, const char* fileName, int dim
                     0), m_fileName(fileName), m_selectedSlot("")
 {
     createParam(P_recalcString, asynParamOctet, &P_recalc);  
+    createParam(P_errorsString, asynParamOctet, &P_errors);
     createParam(P_set_slotString, asynParamOctet, &P_set_slot);  
     createParam(P_get_slotString, asynParamOctet, &P_get_slot);  
     createParam(P_slot_from_posString, asynParamOctet, &P_slot_from_pos);
     createParam(P_set_posnString, asynParamOctet, &P_set_posn);
     createParam(P_get_available_slotsString, asynParamOctet, &P_get_available_slots);  
     createParam(P_get_available_in_selected_slotsString, asynParamOctet, &P_get_available_in_selected_slot);
-    
+
     // set dims. Default should be 2. Only 1 and 2 are currently supported
     m_dims = dims;
     if ( m_dims!=1 ) m_dims = 2;
@@ -57,27 +58,40 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
     const char *paramName = NULL;
     getParamName(function, &paramName);
 
+    char error[100];
+    current_errors[function] = "";
+
     if (function == P_recalc) 
     {
         converter c(m_dims);
         c.createLookup();
+
+        current_errors[function] = c.errors();
         
         *nActual = strlen(value);
     }
     else if (function == P_set_slot)
     {
         std::string newRack = std::string(value);
-        
-        converter c(m_dims);
-        if (c.createLookup() == 0 && c.checkSlotExists(newRack)) {
-            asynPrint(pasynUser, ASYN_TRACE_ERROR, "%s:%s: setting slot=%s \n", driverName, functionName, newRack.c_str());
-            m_selectedSlot = newRack;
-        } else {
-            asynPrint(pasynUser, ASYN_TRACE_ERROR, "%s:%s: setting slot=%s not possible (does not exist). Keeping old rack (%s)\n", driverName, functionName, newRack.c_str(), m_selectedSlot.c_str());
-            status = asynError;
+
+        if (newRack == "") {
+            current_errors[function] = "Sample changer not yet selected - you will be unable to select any positions until the sample changer is set.\nUse sample changer \"_ALL\" to enable the use of positions from all sample changers.";
         }
-        
-        *nActual = strnlen(value, maxChars);
+        else {
+            converter c(m_dims);
+            if (c.createLookup() == 0 && c.checkSlotExists(newRack)) {
+                asynPrint(pasynUser, ASYN_TRACE_ERROR, "%s:%s: setting slot=%s \n", driverName, functionName, newRack.c_str());
+                m_selectedSlot = newRack;
+            }
+            else {
+                sprintf(error, "%s:%s: setting slot=%s not possible (does not exist). Keeping old rack (%s)\n", driverName, functionName, newRack.c_str(), m_selectedSlot.c_str());
+                asynPrint(pasynUser, ASYN_TRACE_ERROR, error);
+                current_errors[function] = error;
+                status = asynError;
+            }
+
+            *nActual = strnlen(value, maxChars);
+        }
     }
     else if (function == P_set_posn)
     {
@@ -88,10 +102,13 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
 
         try {
             std::string slot = c.get_slot_for_position(posn);
+            current_errors[function] = c.errors();
             setStringParam(P_slot_from_pos, slot);
         }
         catch (const std::out_of_range &e) {
-            asynPrint(pasynUser, ASYN_TRACE_ERROR, "%s:%s: position not recognised: %s\n", driverName, functionName, posn.c_str());
+            sprintf(error, "%s:%s: position not recognised: %s\n", driverName, functionName, posn.c_str());
+            asynPrint(pasynUser, ASYN_TRACE_ERROR, error);
+            current_errors[function] = error;
             status = asynError;
         }
 
@@ -105,6 +122,16 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
         status = asynError;
         *nActual = 0;
     }
+
+    std::map<int, std::string>::iterator it;
+    for (it = current_errors.begin(); it != current_errors.end(); ++it) {
+        if (!it->second.empty()) {
+            setStringParam(P_errors, it->second);
+            break;
+        }
+        setStringParam(P_errors, "");
+    }
+
     callParamCallbacks();
     asynPrint(pasynUser, ASYN_TRACEIO_DRIVER, 
               "%s:%s: function=%d, name=%s, value=%s\n", 
