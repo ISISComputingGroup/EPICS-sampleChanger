@@ -20,7 +20,7 @@ converter::converter(int i, const std::vector<Rack>& racks, const std::vector<Sl
 }
 
 void converter::printError(const char* format, ...) {
-    char buff[100];
+    char buff[256];
     va_list argptr;
     va_start(argptr, format);
     vsnprintf(buff, sizeof(buff), format, argptr);
@@ -78,7 +78,7 @@ void converter::loadRackDefs(const char* fname)
 {
     TiXmlDocument doc(fname);
     if (!doc.LoadFile()) {
-        printError("sampleChanger: Unable to open rack defs file \"%s\": %s\n", fname, doc.ErrorDesc());
+        printError("sampleChanger: Unable to open rack defs file \"%s\". Error on line %i: %s\n\n", fname, doc.ErrorRow(), doc.ErrorDesc());
         return;
     }
 
