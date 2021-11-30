@@ -223,7 +223,7 @@ static const iocshFuncDef initFuncDef = {"sampleChangerConfigure", sizeof(initAr
 static void initCallFunc(const iocshArgBuf *args)
 {
     /**
-     * This function is called from the iocsh shell.
+     * @brief This function is called from the iocsh shell.
      * It creates a new instance of the sampleChanger driver.
      * @param[in] args The arguments passed to the shell.
      * @return void

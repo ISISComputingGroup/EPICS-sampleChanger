@@ -8,6 +8,7 @@
 
 class sampleChanger : public asynPortDriver 
 {
+    // These are the methods we override from asynPortDriver
 public:
     sampleChanger(const char* portName, const char* fileName, int dims);
     virtual asynStatus writeOctet(asynUser *pasynUser, const char *value, size_t maxChars, size_t *nActual);

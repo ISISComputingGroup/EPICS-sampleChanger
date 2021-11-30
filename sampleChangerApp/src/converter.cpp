@@ -7,6 +7,10 @@
 
 converter::converter(int i=2)
 {
+    /**
+     * @brief Constructor
+     * @param i Number of dimensions
+     */
     m_dims = i;
     loadDefRackDefs("RACKDEFS");
 } 
