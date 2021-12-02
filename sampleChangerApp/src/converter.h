@@ -28,6 +28,7 @@ struct slotData
 
 class converter
 {
+// The following is a map of rack types to a map of positions to samplePosn
 public:
     converter(int i);
     converter(int i, std::map<std::string, std::map<std::string, samplePosn> > racks, std::map<std::string, slotData> slots);
