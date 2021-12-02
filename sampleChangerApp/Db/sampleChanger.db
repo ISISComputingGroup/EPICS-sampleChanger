@@ -52,8 +52,7 @@ record(stringout, "$(P)POSN:SP") {
 
 record(sseq, "$(P)POSN:SP:RBV") {
     field(DESC, "Get the posn from the lookup")
-	field(SCAN, ".1 second")
-	field(DOL1,"$(MOT_SET_POINT)POSN:SP:RBV CA")
+	field(DOL1,"$(MOT_SET_POINT)POSN:SP:RBV CP")
 	field(LNK1,"$(P)POSN:SP PP")
 }
 
@@ -73,3 +72,10 @@ record(waveform, "$(P)AVAILABLE_IN_SLOT") {
 	field(FLNK,"$(P)RECALC")
 }
 
+record(waveform, "$(P)ERRORS") {
+    field(SCAN, "I/O Intr")
+	field(DTYP,"asynOctetRead")
+	field(FTVL,"CHAR")
+	field(NELM,"8000")
+	field(INP,"@asyn($(LOOKUP),0,0)ERRORS")
+}
