@@ -8,13 +8,28 @@
 
 class sampleChanger : public asynPortDriver 
 {
-    // These are the methods we override from asynPortDriver
+    /** 
+     * @class sampleChanger
+     * @brief This class implements the sample changer.
+     * The sample changer is contstructed using galils that can be used to change the sample.
+     * returns the current sample position.
+     */
+
+// These are the methods we override from asynPortDriver
 public:
+    /** 
+     * Constructor for the sample changer class.
+     * Calls constructor for the asynPortDriver base class.
+     */
     sampleChanger(const char* portName, const char* fileName, int dims);
     virtual asynStatus writeOctet(asynUser *pasynUser, const char *value, size_t maxChars, size_t *nActual);
     virtual asynStatus readOctet(asynUser *pasynUser, char *value, size_t maxChars, size_t *nActual, int* eomReason);
                  
 private:
+    /** 
+     * Values used for pasynUser->reason, and indexes into the parameter library.
+     * These are used by writeInt32, writeFloat64, writeString and writeOctet.\
+     */
     std::string m_fileName;
     std::string m_selectedSlot;
     int m_dims;
