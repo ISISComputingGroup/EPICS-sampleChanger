@@ -6,6 +6,7 @@ import os
 class PV:
 	"""
 	A class to emulate epics.PV for the sample changer using the genie library
+	The class is used to get and set the values of the PVs
 	"""
 	def __init__(self, pv):
 		self.pv = pv
