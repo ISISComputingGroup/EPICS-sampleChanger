@@ -4,6 +4,10 @@ import os
 
 # Simple class to emulate epics.PV
 class PV:
+	"""
+	A class to emulate epics.PV for the sample changer using the genie library
+	The class is used to get and set the values of the PVs
+	"""
 	def __init__(self, pv):
 		self.pv = pv
 	def get(self):
@@ -13,6 +17,13 @@ class PV:
 
 # Move to a named position and check that we go where we expect
 def move_to(posn, coord1, coord2):
+	"""
+	A method to move to a named position and check that we go where we expect
+	@param posn: The position to move to
+	@param coord1: The first coordinate
+	@param coord2: The second coordinate
+	@return: True if the move was successful, False otherwise
+	"""
 	posn_sp.put(posn)
 	time.sleep(1)
 	t1 = coord1t.get()

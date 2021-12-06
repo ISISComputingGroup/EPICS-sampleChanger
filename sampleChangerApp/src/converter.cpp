@@ -7,6 +7,10 @@
 
 converter::converter(int i = 2)
 {
+    /**
+     * Constructor
+     * @param i Number of dimensions
+     */
     m_dims = i;
     loadDefRackDefs("RACKDEFS");
 }
@@ -14,6 +18,12 @@ converter::converter(int i = 2)
 // alternative constructor, only for testing
 converter::converter(int i, const std::vector<Rack>& racks, const std::vector<Slot>& slots)
 {
+    /** 
+     * This constructor is only for testing.
+     * @param i number of dimensions
+     * @param racks map of rack names to rack definitions
+     * @param slots map of slot names to slot data
+     */
     m_dims = i;
     m_racks = racks;
     m_slots = slots;
@@ -65,8 +75,14 @@ std::vector<std::pair<std::string, std::string>>::const_iterator converter::find
 
 void converter::loadDefRackDefs(const char* env_fname)
 {
+    /** 
+     * This function loads the rack definitions from the environment variable
+     * @param env_fname environment variable name for file name
+     * @return void
+     */
     const char* fname = getenv(env_fname);
     if (fname == NULL) {
+
         errlogPrintf("sampleChanger: Environment variable \"%s\" not set\n", env_fname);
         return;
     }
@@ -76,6 +92,11 @@ void converter::loadDefRackDefs(const char* env_fname)
 // Read rack_definitions.xml
 void converter::loadRackDefs(const char* fname)
 {
+    /** 
+     * This function loads the rack definitions from the file
+     * @param fname file name
+     * @return void
+     */
     TiXmlDocument doc(fname);
     if (!doc.LoadFile()) {
         printError("sampleChanger: Unable to open rack defs file \"%s\". Error on line %i: %s\n\n", fname, doc.ErrorRow(), doc.ErrorDesc());
@@ -102,6 +123,11 @@ void converter::loadRackDefs(const char* fname)
 // Extract the definitions of the rack types from the xml
 void converter::loadRackDefs(TiXmlHandle& hRoot)
 {
+    /** 
+     * This function loads the rack definitions from the xml
+     * @param hRoot root of the xml
+     * @return void
+     */
     m_racks.clear();
 
     for (TiXmlElement* pElem = hRoot.FirstChild("racks").FirstChild("rack").Element(); pElem; pElem = pElem->NextSiblingElement())
@@ -133,6 +159,13 @@ void converter::loadRackDefs(TiXmlHandle& hRoot)
 // Extract the definitions of the slots from the xml
 void converter::loadSlotDefs(TiXmlHandle& hRoot)
 {
+    /** 
+     * This function loads the slot definitions from the xml
+     * @param hRoot root of the xml
+     * @return void
+     */
+    //printf("Loading slot defs\n");
+
     m_slots.clear();
 
     for (TiXmlElement* pElem = hRoot.FirstChild("slots").FirstChild("slot").Element(); pElem; pElem = pElem->NextSiblingElement())
@@ -156,6 +189,11 @@ void converter::loadSlotDefs(TiXmlHandle& hRoot)
 // Load the slot details - ie the current setup in samplechanger.xml
 void converter::loadSlotDetails(const char* fname)
 {
+    /** 
+     * This function loads the slot details from the file
+     * @param fname file name
+     * @return void
+     */
     TiXmlDocument doc(fname);
     if (!doc.LoadFile()) {
         printError("sampleChanger: Unable to open slot details file \"%s\"\n", fname);
@@ -181,6 +219,12 @@ void converter::loadSlotDetails(const char* fname)
 // Extract slot details from the xml
 std::vector<converter::Slot> converter::loadSlotDetails(TiXmlHandle& hRoot)
 {
+    /** 
+     * This function loads the slot details from the xml
+     * @param hRoot root of the xml
+     * @return m_slots map of slot data
+     */
+  
     for (TiXmlElement* pElem = hRoot.FirstChild("slot").Element(); pElem; pElem = pElem->NextSiblingElement())
     {
         std::string slotName = pElem->Attribute("name");
@@ -210,6 +254,10 @@ std::vector<converter::Slot> converter::loadSlotDetails(TiXmlHandle& hRoot)
 // Create the lookup file
 int converter::createLookup()
 {
+   /** 
+     * This function creates the lookup file from the slot details 
+     * @return 0 on success, -1 on error
+     */
     const char* fnameIn = getenv("SLOT_DETAILS_FILE");
     if (fnameIn == NULL) {
         printError("Environment variable SLOT_DETAILS_FILE not set\n");
@@ -236,6 +284,11 @@ int converter::createLookup()
 }
 
 bool converter::checkSlotExists(const std::string& slotName) const {
+    /** 
+     * This function checks if a slot exists
+     * @param slotName name of the slot
+     * @return true if the slot exists, false otherwise
+     */
     try {
         std::vector<SlotPositions>::const_iterator it = find_in_positions(slotName);
         if (it == m_positions_for_each_slot.cend())
@@ -251,6 +304,10 @@ bool converter::checkSlotExists(const std::string& slotName) const {
 
 std::string converter::get_available_slots() const
 {
+    /** 
+     * This function returns the available slots
+     * @return string of available slots
+     */
     std::string res;
     for (std::vector<Slot>::const_iterator it = m_slots.cbegin(); it != m_slots.cend(); it++) {
         res += it->name;
@@ -263,6 +320,11 @@ std::string converter::get_available_slots() const
 
 std::string converter::get_available_in_slot(std::string slot)
 {
+    /** 
+     * This function returns the available positions in a slot
+     * @param slot name of the slot
+     * @return string of available positions in the slot
+     */
     std::string res;
     std::list<std::string> positions;
     try {
@@ -285,6 +347,11 @@ std::string converter::get_available_in_slot(std::string slot)
 
 std::string converter::get_slot_for_position(const std::string& position) const
 {
+      /** 
+     * This function returns the slot for a position in the list of positions for each slot
+     * @param position name of the position
+     * @return string of the slot
+     */
     if (find_in_slots(position) == m_slot_for_each_position.cend())
     {
         throw std::out_of_range("\nSlot not found at given position");
@@ -295,6 +362,11 @@ std::string converter::get_slot_for_position(const std::string& position) const
 // Write to the lookup file
 int converter::createLookup(FILE* fpOut)
 {
+    /** 
+     * This function creates the lookup file from the slot details
+     * @param fpOut file pointer
+     * @return 0 on success, 1 on error
+     */
     errlogPrintf("sampleChanger: writing motionsetpoints lookup file\n");
     int motionsetpoint_defs_written = 0;
     m_positions_for_each_slot.clear();
@@ -305,11 +377,12 @@ int converter::createLookup(FILE* fpOut)
     fprintf(fpOut, "# Instead edit samplechanger.xml and press recalc\n");
 
     for (std::vector<Slot>::const_iterator it = m_slots.cbegin(); it != m_slots.cend(); it++) {
-
+        // Check if the slot is in the list of slots
         const Slot& slot = *it;
         std::vector<Rack>::const_iterator iter = std::find_if(m_racks.cbegin(), m_racks.cend(),
             [&](Rack r) {return r.name == slot.rackType; });
         if (iter == m_racks.cend()) {
+            // This is not a known rack type
             printError("sampleChanger: Unknown rack type '%s' of slot %s\n", slot.rackType.c_str(), slot.name.c_str());
             return 1;
         }
@@ -355,6 +428,7 @@ int converter::createLookup(FILE* fpOut)
 
 
     if (!motionsetpoint_defs_written) {
+        // No slots defined
         printError("sampleChanger: no data written\n");
         return 1;
     }
