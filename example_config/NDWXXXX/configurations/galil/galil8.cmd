@@ -26,5 +26,9 @@ GalilCreateAxis("Galil","F",1,"",1)
 GalilCreateAxis("Galil","G",1,"",1)
 GalilCreateAxis("Galil","H",1,"",1)
 
+$(IFNEWGALIL=#) GalilCreateCSAxes("Galil")
+
 #G21X3StartCard($(GCID),"",0,0)
 GalilStartController("Galil","",0,0,0)
+
+$(IFNEWGALIL=#) GalilCreateProfile("Galil", 2000)
