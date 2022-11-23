@@ -2,6 +2,7 @@
 #define SAMPLECHANGER_H
  
 #include <string>
+#include <inttypes.h>
 
 #include "asynPortDriver.h"
 #include "converter.h"
@@ -32,8 +33,8 @@ private:
      */
     std::string m_fileName;
     std::string m_selectedSlot;
-    int m_dims;
-    std::map <int, std::string> current_errors;
+    int32_t m_dims;
+    std::map <int32_t, std::string> current_errors;
 
     int P_recalc; // string
     int P_errors; // string

@@ -69,7 +69,9 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
     const char *paramName = NULL;
     getParamName(function, &paramName); // Get the name of the parameter
 
-    char error[100];
+    // Assign decent amount of buffer space to avoid memory overflow
+    const size_t size_of_buffer = 1000;
+    char error[size_of_buffer];
     current_errors[function] = "";
 
     if (function == P_recalc) 
@@ -79,7 +81,7 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
 
         current_errors[function] = c.errors();
         
-        *nActual = strlen(value); // return the number of characters actually written
+        *nActual = strnlen(value, 100); // return the number of characters actually written
     }
     else if (function == P_set_slot)
     {
@@ -97,7 +99,7 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
                 m_selectedSlot = newRack;
             }
             else {
-                sprintf(error, "%s:%s: setting slot=%s not possible (does not exist). Keeping old rack (%s)\n", driverName, functionName, newRack.c_str(), m_selectedSlot.c_str());
+                sprintf_s(error, size_of_buffer, "%s:%s: setting slot=%s not possible (does not exist). Keeping old rack (%s)\n", driverName, functionName, newRack.c_str(), m_selectedSlot.c_str());
                 asynPrint(pasynUser, ASYN_TRACE_ERROR, error);
                 current_errors[function] = error;
                 status = asynError;
