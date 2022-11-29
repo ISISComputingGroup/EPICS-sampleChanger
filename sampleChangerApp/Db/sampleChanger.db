@@ -78,4 +78,5 @@ record(waveform, "$(P)ERRORS") {
 	field(FTVL,"CHAR")
 	field(NELM,"8000")
 	field(INP,"@asyn($(LOOKUP),0,0)ERRORS")
+	field(UDFS, "NO_ALARM")
 }
