@@ -81,7 +81,7 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
 
         current_errors[function] = c.errors();
         
-        *nActual = strnlen(value, 100); // return the number of characters actually written
+        *nActual = strnlen(value, maxChars); // return the number of characters actually written
     }
     else if (function == P_set_slot)
     {
@@ -99,14 +99,14 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
                 m_selectedSlot = newRack;
             }
             else {
-                sprintf_s(error, size_of_buffer, "%s:%s: setting slot=%s not possible (does not exist). Keeping old rack (%s)\n", driverName, functionName, newRack.c_str(), m_selectedSlot.c_str());
+                epicsSnprintf(error, size_of_buffer, "%s:%s: setting slot=%s not possible (does not exist). Keeping old rack (%s)\n", driverName, functionName, newRack.c_str(), m_selectedSlot.c_str());
                 asynPrint(pasynUser, ASYN_TRACE_ERROR, error);
                 current_errors[function] = error;
                 status = asynError;
             }
-
-            *nActual = strnlen(value, maxChars); // return the number of characters actually written
         }
+
+        *nActual = strnlen(value, maxChars); // return the number of characters actually written
     }
     else if (function == P_set_posn)
     {

@@ -2,7 +2,6 @@
 #define SAMPLECHANGER_H
  
 #include <string>
-#include <inttypes.h>
 
 #include "asynPortDriver.h"
 #include "converter.h"
