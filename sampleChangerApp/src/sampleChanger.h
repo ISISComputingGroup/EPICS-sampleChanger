@@ -2,6 +2,7 @@
 #define SAMPLECHANGER_H
  
 #include <string>
+#include <cstdint>
 
 #include "asynPortDriver.h"
 #include "converter.h"
