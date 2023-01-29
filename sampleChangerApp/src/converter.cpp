@@ -1,4 +1,5 @@
 #include <errlog.h>
+#include <epicsString.h>
 #include <shareLib.h>
 
 #include "converter.h"
@@ -43,7 +44,7 @@ std::vector<converter::SlotPositions>::iterator converter::find_in_positions(con
 {
     std::vector<SlotPositions>::iterator it =
         std::find_if(m_positions_for_each_slot.begin(), m_positions_for_each_slot.end(),
-            [&](SlotPositions slpos) {return slpos.slotName == slot; });
+            [&](SlotPositions slpos) {return epicsStrCaseCmp(slpos.slotName.c_str(), slot.c_str()) == 0; });
     return it;
 }
 
@@ -52,7 +53,7 @@ std::vector<converter::SlotPositions>::const_iterator converter::find_in_positio
 {
     std::vector<SlotPositions>::const_iterator it =
         std::find_if(m_positions_for_each_slot.cbegin(), m_positions_for_each_slot.cend(),
-            [&](SlotPositions slpos) {return slpos.slotName == slot; });
+            [&](SlotPositions slpos) {return epicsStrCaseCmp(slpos.slotName.c_str(), slot.c_str()) == 0; });
     return it;
 }
 
@@ -60,7 +61,7 @@ std::vector<std::pair<std::string, std::string>>::iterator converter::find_in_sl
 {
     std::vector<std::pair<std::string, std::string>>::iterator slot_it =
         std::find_if(m_slot_for_each_position.begin(), m_slot_for_each_position.end(),
-            [&](std::pair<std::string, std::string> pair) {return pair.first == name; });
+            [&](std::pair<std::string, std::string> pair) {return epicsStrCaseCmp(pair.first.c_str(), name.c_str()) == 0; });
     return slot_it;
 }
 
@@ -69,7 +70,7 @@ std::vector<std::pair<std::string, std::string>>::const_iterator converter::find
 {
     std::vector<std::pair<std::string, std::string>>::const_iterator slot_it =
         std::find_if(m_slot_for_each_position.cbegin(), m_slot_for_each_position.cend(),
-            [&](std::pair<std::string, std::string> pair) {return pair.first == name; });
+            [&](std::pair<std::string, std::string> pair) {return epicsStrCaseCmp(pair.first.c_str(), name.c_str()) == 0; });
     return slot_it;
 }
 
@@ -229,7 +230,7 @@ std::vector<converter::Slot> converter::loadSlotDetails(TiXmlHandle& hRoot)
     {
         std::string slotName = pElem->Attribute("name");
 
-        std::vector<Slot>::iterator iter = std::find_if(m_slots.begin(), m_slots.end(), [&](Slot slt) { return slt.name == slotName; });
+        std::vector<Slot>::iterator iter = std::find_if(m_slots.begin(), m_slots.end(), [&](Slot slt) { return epicsStrCaseCmp(slt.name.c_str(), slotName.c_str()) == 0; });
         if (iter == m_slots.end()) {
             printError("sampleChanger: Unknown slot '%s' in slot details\n", slotName.c_str());
         }
@@ -380,7 +381,7 @@ int converter::createLookup(FILE* fpOut)
         // Check if the slot is in the list of slots
         const Slot& slot = *it;
         std::vector<Rack>::const_iterator iter = std::find_if(m_racks.cbegin(), m_racks.cend(),
-            [&](Rack r) {return r.name == slot.rackType; });
+            [&](Rack r) {return epicsStrCaseCmp(r.name.c_str(), slot.rackType.c_str()) == 0; });
         if (iter == m_racks.cend()) {
             // This is not a known rack type
             printError("sampleChanger: Unknown rack type '%s' of slot %s\n", slot.rackType.c_str(), slot.name.c_str());
