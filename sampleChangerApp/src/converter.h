@@ -125,6 +125,8 @@ public:
     const std::vector<Rack>& racks() const { return m_racks; } // create a const version of the racks
     const std::string errors() {return std::accumulate(m_errors.begin(), m_errors.end(), std::string(""));}; // create a const version of the errors
 
+    int createLookup(FILE* fpOut);
+
 private:
     /** 
      * A private member function to load the racks and slots.
@@ -146,7 +148,6 @@ private:
     void loadDefRackDefs(const char* env_fname); // loads the rack definitions from the environment file
     void loadRackDefs(const char* fname); 
     void loadSlotDetails(const char* fname);
-    int createLookup(FILE* fpOut);
     void printError(const char* format, ...);
 };
 

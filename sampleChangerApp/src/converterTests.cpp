@@ -102,6 +102,7 @@ namespace {
         conv.loadRackDefs(hRoot);
         conv.loadSlotDefs(hRoot);
         conv.loadSlotDetails(hRoot2);
+        conv.createLookup(tmpfile());
 
         // If order is preserved in m_racks and m_slots it will be correctly outputted to lookup file as it simply loops over them
         
@@ -112,6 +113,14 @@ namespace {
         ASSERT_EQ(slots[0].name, "T");
         ASSERT_EQ(slots[1].name, "B");
         ASSERT_EQ(slots[2].name, "F");
+
+        ASSERT_EQ(conv.get_available_slots(), "T B F _ALL END");
+        ASSERT_EQ(conv.checkSlotExists("T"), 1);
+        ASSERT_EQ(conv.get_available_in_slot("T"), "AT END");
+        ASSERT_EQ(conv.checkSlotExists("F"), 1);
+        ASSERT_EQ(conv.get_available_in_slot("F"), "F1 END");
+ //       std::cerr << conv.get_slot_for_position("TA") << std::endl;
+
     }
 
 }
