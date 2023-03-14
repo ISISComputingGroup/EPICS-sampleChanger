@@ -108,8 +108,8 @@ namespace {
         
         auto racks = conv.racks();
         auto slots = conv.slots();
-        ASSERT_EQ(racks[0].name, "NarrowX10");
-        ASSERT_EQ(racks[1].name, "Banjo");
+        ASSERT_EQ(racks[0].name, "NARROWX10");
+        ASSERT_EQ(racks[1].name, "BANJO");
         ASSERT_EQ(slots[0].name, "T");
         ASSERT_EQ(slots[1].name, "B");
         ASSERT_EQ(slots[2].name, "F");
@@ -119,8 +119,12 @@ namespace {
         ASSERT_EQ(conv.get_available_in_slot("T"), "AT END");
         ASSERT_EQ(conv.checkSlotExists("F"), 1);
         ASSERT_EQ(conv.get_available_in_slot("F"), "1F END");
- //       std::cerr << conv.get_slot_for_position("TA") << std::endl;
 
+        // Check if search is case insensitive.
+        ASSERT_EQ(conv.checkSlotExists("t"), 1);
+        ASSERT_EQ(conv.get_available_in_slot("t"), "AT END");
+        ASSERT_EQ(conv.checkSlotExists("f"), 1);
+        ASSERT_EQ(conv.get_available_in_slot("f"), "1F END");
     }
 
 }
