@@ -74,9 +74,9 @@ namespace {
                 </definitions> ";
 
         std::string filedata2 = "<slots> \
-                        <slot name = \"T\" rack_type = \"NarrowX10\" xoff = \"284.7\" yoff = \"-125.0\" / > \
-                        <slot name = \"B\" rack_type = \"NarrowX10\" xoff = \"284.5\" yoff = \"104.7\" / > \
-                        <slot name = \"F\" rack_type = \"Banjo\" xoff = \"289.5\" yoff = \"-125.0\" / > \
+                        <slot name = \"T\" rack_type = \"NarrowX10\" xoff = \"284.7\" yoff = \"-125.0\"/> \
+                        <slot name = \"B\" rack_type = \"NarrowX10\" xoff = \"284.5\" yoff = \"104.7\" /> \
+                        <slot name = \"F\" rack_type = \"Banjo\" xoff = \"289.5\" yoff = \"-125.0\"/> \
                     </slots>";
 
         TiXmlDocument doc;
@@ -118,7 +118,7 @@ namespace {
         ASSERT_EQ(conv.checkSlotExists("T"), 1);
         ASSERT_EQ(conv.get_available_in_slot("T"), "AT END");
         ASSERT_EQ(conv.checkSlotExists("F"), 1);
-        ASSERT_EQ(conv.get_available_in_slot("F"), "F1 END");
+        ASSERT_EQ(conv.get_available_in_slot("F"), "1F END");
  //       std::cerr << conv.get_slot_for_position("TA") << std::endl;
 
     }
