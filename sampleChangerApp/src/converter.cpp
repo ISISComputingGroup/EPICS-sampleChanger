@@ -135,11 +135,13 @@ void converter::loadRackDefs(TiXmlHandle& hRoot)
     {
         std::vector<Position> posns;
         std::string rackName = pElem->Attribute("name");
+        std::transform(rackName.begin(), rackName.end(), rackName.begin(), std::toupper);
         for (TiXmlElement* pRack = pElem->FirstChildElement("position"); pRack; pRack = pRack->NextSiblingElement()) {
             Position posn;
             const char* attrib = pRack->Attribute("name");
             if (attrib != NULL) {
                 posn.name = attrib;
+                std::transform(posn.name.begin(), posn.name.end(), posn.name.begin(), std::toupper);
             }
             else {
                 printError("sampleChanger: rack has no name attribute \"%s\"\n", rackName.c_str());
@@ -174,6 +176,7 @@ void converter::loadSlotDefs(TiXmlHandle& hRoot)
 
         Slot slot;
         std::string slotName = pElem->Attribute("name");
+        std::transform(slotName.begin(), slotName.end(), slotName.begin(), std::toupper);
         slot.name = slotName;
 
         if (pElem->QueryDoubleAttribute("x", &slot.x) != TIXML_SUCCESS) {
@@ -229,6 +232,7 @@ std::vector<converter::Slot> converter::loadSlotDetails(TiXmlHandle& hRoot)
     for (TiXmlElement* pElem = hRoot.FirstChild("slot").Element(); pElem; pElem = pElem->NextSiblingElement())
     {
         std::string slotName = pElem->Attribute("name");
+        std::transform(slotName.begin(), slotName.end(), slotName.begin(), std::toupper);
 
         std::vector<Slot>::iterator iter = std::find_if(m_slots.begin(), m_slots.end(), [&](Slot slt) { return epicsStrCaseCmp(slt.name.c_str(), slotName.c_str()) == 0; });
         if (iter == m_slots.end()) {
