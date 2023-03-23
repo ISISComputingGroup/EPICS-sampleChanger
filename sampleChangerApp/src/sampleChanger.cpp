@@ -23,6 +23,8 @@
 
 #include <epicsExport.h>
 
+#include <boost/algorithm/string.hpp>
+
 static const char *driverName = "sampleChanger";
 
 // Create a new instance of the sampleChanger class
@@ -97,7 +99,7 @@ asynStatus sampleChanger::writeOctet(asynUser *pasynUser, const char *value, siz
             if (c.createLookup() == 0 && c.checkSlotExists(newRack)) {
                 asynPrint(pasynUser, ASYN_TRACE_ERROR, "%s:%s: setting slot=%s \n", driverName, functionName, newRack.c_str());
                 m_selectedSlot = newRack;
-                std::transform(m_selectedSlot.begin(), m_selectedSlot.end(), m_selectedSlot.begin(), std::toupper);
+                boost::to_upper(m_selectedSlot);
             }
             else {
                 epicsSnprintf(error, size_of_buffer, "%s:%s: setting slot=%s not possible (does not exist). Keeping old rack (%s)\n", driverName, functionName, newRack.c_str(), m_selectedSlot.c_str());
@@ -190,7 +192,7 @@ asynStatus sampleChanger::readOctet(asynUser *pasynUser, char *value, size_t max
         strncpy(value, result.c_str(), maxChars);
         *nActual = std::min(result.length(), maxChars);
     }
-    else if (function = P_get_available_in_selected_slot)
+    else if (function == P_get_available_in_selected_slot)
     {
         // get the available positions in the selected slot
         converter c(m_dims);
