@@ -192,7 +192,7 @@ asynStatus sampleChanger::readOctet(asynUser *pasynUser, char *value, size_t max
         strncpy(value, result.c_str(), maxChars);
         *nActual = std::min(result.length(), maxChars);
     }
-    else if (function = P_get_available_in_selected_slot)
+    else if (function == P_get_available_in_selected_slot)
     {
         // get the available positions in the selected slot
         converter c(m_dims);
