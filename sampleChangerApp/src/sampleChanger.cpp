@@ -15,6 +15,7 @@
 #include <epicsMutex.h>
 #include <epicsEvent.h>
 #include <iocsh.h>
+#include <shareLib.h>
 
 #include "sampleChanger.h"
 
